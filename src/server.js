@@ -13,16 +13,18 @@ import session from "express-session";
 import dotenv from "dotenv";
 import logger from "morgan";
 
-// Your code here
-
 // module dependencies
 import connectDb from "../src/api/config/dbconfig.js";
 import __404_err_page from "../src/api/middlewares/notFound.js";
 import errorHandlerMiddleware from "../src/api/middlewares/errHandler.js";
+import { customLogger, errorCustomLogger } from "../src/api/utils/logger.js";
+import { consoleLogger } from "../src/api/utils/componentLogger.js";
+import { customErrorLogger } from "../src/api/utils/errCustomLogger.js";
 
 dotenv.config();
 
 const app = express();
+
 const MongoDBStore = MongodbSession(session);
 const store = new MongoDBStore({
   uri: process.env.MONGO_URL,
@@ -30,6 +32,7 @@ const store = new MongoDBStore({
   ttl: 60 * 60, // session will expire in 1hr
 });
 // Middleware functions
+app.use(customLogger);
 app.use(xss());
 app.use(cors());
 app.use(helmet());
@@ -37,7 +40,6 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(mongoSanitize());
 app.use(cookieParser());
-app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV !== "production") {
@@ -59,13 +61,14 @@ app.use(
 
 app.get("/", (req, res, next) => {
   req.session.isAuth = true;
-  console.log(req.session);
-  console.log(req.session.id);
+  /*  console.log(req.session);
+  console.log(req.session.id); */
   res
     .status(StatusCodes.PERMANENT_REDIRECT)
     .json({ message: "Welcome to the E-Commerce rest api application." });
 });
 
+app.use(errorCustomLogger);
 app.use(errorHandlerMiddleware);
 app.use("*", __404_err_page);
 
@@ -75,10 +78,10 @@ const startServer = async () => {
   try {
     await connectDb(process.env.MONGO_URL);
     app.listen(Port, () =>
-      console.info(`Server listening on http:\//localhost:${Port}`)
+      consoleLogger.info(`Server listening on http:\//localhost:${Port}`)
     );
   } catch (err) {
-    console.error(err.message);
+    customErrorLogger.error(err.message);
     process.exit(1);
   }
 };
