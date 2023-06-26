@@ -1,0 +1,27 @@
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+export const mailer = (mail, subject, text) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.USERMAIL,
+      pass: process.env.MAILPASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.USERMAIL,
+    to: mail,
+    subject: subject,
+    text: text,
+  };
+  transporter
+    .sendMail(mailOptions)
+    .then(() => console.log("Mail sent successfully"))
+    .catch((error) => console.error(error.message));
+};
+
+// make the component reusable by making it take 3 customizable arguments
