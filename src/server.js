@@ -20,7 +20,11 @@ import errorHandlerMiddleware from "../src/api/middlewares/errHandler.js";
 import { customLogger, errorCustomLogger } from "../src/api/utils/logger.js";
 import { consoleLogger } from "../src/api/utils/componentLogger.js";
 import { customErrorLogger } from "../src/api/utils/errCustomLogger.js";
+//Module Dependencies ends here
 
+// <======= Routes Imports begins here ==========>
+import authRoute from "../src/api/routes/authRoute.js";
+// <======= Routes Imports ends here ==========>
 dotenv.config();
 
 const app = express();
@@ -41,7 +45,7 @@ app.use(express.json());
 app.use(mongoSanitize());
 app.use(cookieParser());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
@@ -59,6 +63,8 @@ app.use(
   })
 );
 
+app.use("/api/v1/mall/user", authRoute);
+
 app.get("/", (req, res, next) => {
   req.session.isAuth = true;
   /*  console.log(req.session);
@@ -68,8 +74,8 @@ app.get("/", (req, res, next) => {
     .json({ message: "Welcome to the E-Commerce rest api application." });
 });
 
-app.use(errorCustomLogger);
 app.use(errorHandlerMiddleware);
+app.use(errorCustomLogger);
 app.use("*", __404_err_page);
 
 const Port = process.env.PORT || 4000;
