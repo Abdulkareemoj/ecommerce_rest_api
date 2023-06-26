@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
+import { consoleLogger } from "../utils/componentLogger.js";
+import { customErrorLogger } from "../utils/errCustomLogger.js";
 
 const connectDB = async (url) => {
   try {
     await mongoose.connect(url);
-    console.info(`Connected to the Database!`);
+    consoleLogger.info(`Connected to the Database!`);
   } catch (error) {
-    console.error(error.message);
+    customErrorLogger.error(error.message);
   }
 };
 
