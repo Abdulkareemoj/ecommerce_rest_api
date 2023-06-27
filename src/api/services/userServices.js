@@ -35,3 +35,14 @@ export const get_all_users_service = async (users) => {
   const getUsers = await authModel.find(users);
   return getUsers;
 };
+
+// Get a Single user Service
+export const get_single_user_service = async (userID) => {
+  const { id } = userID; // destructure the user ID from the user
+  const userExists = await authModel.findOne({ UserId: id });
+  console.log(userExists);
+  if (!userExists) {
+    throw new Error(`The User with the ID ${id} does not exist`);
+  }
+  return userExists;
+};
