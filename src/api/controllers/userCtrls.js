@@ -4,6 +4,7 @@ import {
   create_user_service,
   login_user_service,
   get_all_users_service,
+  get_single_user_service,
 } from "../services/userServices.js";
 
 // User Signup controller
@@ -53,4 +54,14 @@ export const getAllUser = asyncHandler(async (req, res) => {
   return res
     .status(StatusCodes.OK)
     .json({ numberOfUsers: users.length, users });
+});
+
+//Get a single user controller
+export const getUser = asyncHandler(async (req, res) => {
+  // Destructuring the _id field from the req.params
+  const { _id } = req.params;
+
+  const userDataID = await get_single_user_service({ _id });
+
+  return res.status(StatusCodes.OK).json({ userDataID });
 });
