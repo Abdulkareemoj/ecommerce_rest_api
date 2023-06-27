@@ -15,3 +15,4 @@ export const errorCustomLogger = expressWinston.errorLogger({
   winstonInstance: customErrorLogger,
   statusLevels: true,
 });
+
