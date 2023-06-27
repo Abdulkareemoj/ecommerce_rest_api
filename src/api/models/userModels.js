@@ -30,6 +30,10 @@ var userSchema = new mongoose.Schema({
     required: true,
     maxLength: 15,
   },
+  role: {
+    type: String,
+    default: "user",
+  },
 });
 
 // <----- Applying mongoose middleware to the user model----->
