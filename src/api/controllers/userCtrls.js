@@ -5,6 +5,8 @@ import {
   login_user_service,
   get_all_users_service,
   get_single_user_service,
+  delete_single_user,
+  updateUserService,
 } from "../services/userServices.js";
 
 // User Signup controller
@@ -59,9 +61,25 @@ export const getAllUser = asyncHandler(async (req, res) => {
 //Get a single user controller
 export const getUser = asyncHandler(async (req, res) => {
   // Destructuring the _id field from the req.params
-  const { _id } = req.params;
+  const { id } = req.params;
 
-  const userDataID = await get_single_user_service({ _id });
+  const userDataID = await get_single_user_service({ id });
 
   return res.status(StatusCodes.OK).json({ userDataID });
+});
+
+// Deleting a single user controller
+export const deleteUser = asyncHandler(async (req, res) => {
+  // Destructuring the ID field for req.params
+  const { id } = req.params;
+  const userDataId = await delete_single_user({ id });
+  return res.status(StatusCodes.OK).json({ userDataId });
+});
+
+// Updating the user controller
+export const updateuserCtrl = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  const updatedUser = await updateUserService({ id }, req.body);
+  return res.status(StatusCodes.OK).json({ status: "successful", updatedUser });
 });
