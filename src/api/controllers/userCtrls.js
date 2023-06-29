@@ -7,6 +7,8 @@ import {
   get_single_user_service,
   delete_single_user,
   updateUserService,
+  blockUserService,
+  unBlockUserService,
 } from "../services/userServices.js";
 
 // User Signup controller
@@ -78,8 +80,28 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
 // Updating the user controller
 export const updateuserCtrl = asyncHandler(async (req, res) => {
+  console.log(req.user);
   const { id } = req.params;
   console.log(id);
   const updatedUser = await updateUserService({ id }, req.body);
   return res.status(StatusCodes.OK).json({ status: "successful", updatedUser });
+});
+
+// Block User controller
+export const blockUserCtrl = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  const blockUser = await blockUserService({ id }, req.body);
+  return res.status(StatusCodes.OK).json({ status: "User blocked", blockUser });
+});
+
+// Unblock User
+export const UnBlockUserCtrl = asyncHandler(async (req, res) => {
+  console.log(req.user);
+  const { id } = req.params;
+  console.log(id);
+  const unblockUser = await unBlockUserService({ id }, req.body);
+  return res
+    .status(StatusCodes.OK)
+    .json({ status: "User Un-Blocked", unblockUser });
 });
