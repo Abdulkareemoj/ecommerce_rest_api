@@ -84,3 +84,41 @@ export const updateUserService = async (userId, updateData) => {
   }
   return updateuser;
 };
+
+// blocking a user service
+export const blockUserService = async (User) => {
+  const { id } = User;
+  const blockUser = await authModel.findByIdAndUpdate(
+    id,
+    { isBlocked: true },
+    {
+      new: true,
+    }
+  );
+  if (!blockUser) {
+    throw new UnauthenticatedError(
+      "The User is not avauilable on our database",
+      StatusCodes.NO_CONTENT
+    );
+  } else {
+    return blockUser;
+  }
+};
+
+// unblocking a user
+export const unBlockUserService = async (User) => {
+  const { id } = User;
+  const unblockuser = await authModel.findByIdAndUpdate(
+    id,
+    { isBlocked: false },
+    {
+      new: true,
+    }
+  );
+  if (!unblockuser)
+    throw new UnauthenticatedError(
+      "The User is not avauilable on our database",
+      StatusCodes.NO_CONTENT
+    );
+  return unblockuser;
+};
