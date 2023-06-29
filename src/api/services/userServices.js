@@ -1,5 +1,8 @@
 import { authModel } from "../models/userModels.js";
 import { mailer } from "../config/nodeMailer.js";
+import CustomAPIError from "../helpers/custom-errors.js";
+import UnauthenticatedError from "../helpers/unauthenticated.js";
+import { StatusCodes } from "http-status-codes";
 
 // User signup Services
 export const create_user_service = async (userData) => {
@@ -20,11 +23,16 @@ export const login_user_service = async (userData) => {
   const { email, password } = userData; // Extract Email and Password fro userData
   const userExists = await authModel.findOne({ email: email });
   if (!userExists) {
-    throw new Error("Password or email didn't match any on our database");
+    throw new UnauthenticatedError(
+      "Password or email didn't match any on our database",
+      StatusCodes.NOT_FOUND
+    );
   }
   const isMatch = await userExists.comparePwd(password);
   if (!isMatch) {
-    throw new Error("Password or email didn't match any on our database");
+    throw new UnauthenticatedError(
+      "Password or email didn't match any on our database"
+    );
   }
   const token = userExists.createJWT();
   return { userExists, token };
@@ -42,7 +50,10 @@ export const get_single_user_service = async (userID) => {
   const userExists = await authModel.findById({ _id: id });
   console.log(userExists);
   if (!userExists) {
-    throw new Error(`The User with the ID ${id} does not exist`);
+    throw new CustomAPIError(
+      `The User with the ID ${id} does not exist`,
+      StatusCodes.NOT_FOUND
+    );
   }
   return userExists;
 };
@@ -52,7 +63,8 @@ export const delete_single_user = async (userId) => {
   const { id } = userId;
   const user = await authModel.findOneAndDelete({ _id: id });
   console.log(user);
-  if (!user) throw new Error("The user was not found.");
+  if (!user)
+    throw new CustomAPIError("The user was not found.", StatusCodes.NOT_FOUND);
   return user;
 };
 
@@ -65,7 +77,10 @@ export const updateUserService = async (userId, updateData) => {
   });
   console.log(userId);
   if (!updateuser) {
-    throw new Error("The user was not found to be updated");
+    throw new CustomAPIError(
+      "The user was not found to be updated",
+      StatusCodes.NOT_FOUND
+    );
   }
   return updateuser;
 };
