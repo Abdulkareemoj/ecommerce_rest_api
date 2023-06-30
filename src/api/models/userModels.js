@@ -4,37 +4,57 @@ import jwt from "jsonwebtoken";
 import { consoleLogger } from "../utils/componentLogger.js";
 
 // Declare the Schema of the Mongo model
-var userSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, "Please your First name is mandatory."],
-    unique: false,
+const userSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: [true, "Please your First name is mandatory."],
+      unique: false,
+    },
+    lastName: {
+      type: String,
+      required: [true, "Please your Last name is mandatory."],
+      unique: false,
+    },
+    email: {
+      type: String,
+      required: [true, "Please an email address is mandatory."],
+      unique: [true, "This email address is currently in use"],
+    },
+    mobileNumber: {
+      type: String,
+      required: [true, "Please your mobile number mandatory."],
+      unique: [true, "This mobile number is currently in use"],
+    },
+    password: {
+      type: String,
+      required: true,
+      maxLength: 15,
+    },
+    role: {
+      type: String,
+      default: "user",
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    cart: {
+      type: Array,
+      default: [],
+    },
+    address: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+      },
+    ],
+    whishlists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   },
-  lastName: {
-    type: String,
-    required: [true, "Please your Last name is mandatory."],
-    unique: false,
-  },
-  email: {
-    type: String,
-    required: [true, "Please an email address is mandatory."],
-    unique: [true, "This email address is currently in use"],
-  },
-  mobileNumber: {
-    type: String,
-    required: [true, "Please your mobile number mandatory."],
-    unique: [true, "This mobile number is currently in use"],
-  },
-  password: {
-    type: String,
-    required: true,
-    maxLength: 15,
-  },
-  role: {
-    type: String,
-    default: "user",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 // <----- Applying mongoose middleware to the user model----->
 
