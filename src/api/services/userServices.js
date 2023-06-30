@@ -41,6 +41,9 @@ export const login_user_service = async (userData) => {
 // get all users service
 export const get_all_users_service = async (users) => {
   const getUsers = await authModel.find(users);
+  if (getUsers.length <= 0) {
+    throw new CustomAPIError(`No users found`, StatusCodes.NO_CONTENT);
+  }
   return getUsers;
 };
 
@@ -51,7 +54,7 @@ export const get_single_user_service = async (userID) => {
   console.log(userExists);
   if (!userExists) {
     throw new CustomAPIError(
-      `The User with the ID ${id} does not exist`,
+      `The User with the ID: ${id} does not exist`,
       StatusCodes.NOT_FOUND
     );
   }
@@ -64,7 +67,10 @@ export const delete_single_user = async (userId) => {
   const user = await authModel.findOneAndDelete({ _id: id });
   console.log(user);
   if (!user)
-    throw new CustomAPIError("The user was not found.", StatusCodes.NOT_FOUND);
+    throw new CustomAPIError(
+      `The user with the ID: ${id} does not exist`,
+      StatusCodes.NOT_FOUND
+    );
   return user;
 };
 
@@ -78,7 +84,7 @@ export const updateUserService = async (userId, updateData) => {
   console.log(userId);
   if (!updateuser) {
     throw new CustomAPIError(
-      "The user was not found to be updated",
+      `The user with the id: ${id} was not found to be updated`,
       StatusCodes.NOT_FOUND
     );
   }
@@ -91,9 +97,7 @@ export const blockUserService = async (User) => {
   const blockUser = await authModel.findByIdAndUpdate(
     id,
     { isBlocked: true },
-    {
-      new: true,
-    }
+    { new: true }
   );
   if (!blockUser) {
     throw new UnauthenticatedError(
