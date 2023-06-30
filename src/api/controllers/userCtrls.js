@@ -50,11 +50,7 @@ export const LoginUser = asyncHandler(async (req, res) => {
 // Get all users Controller
 export const getAllUser = asyncHandler(async (req, res) => {
   const users = await get_all_users_service();
-  if (users.length <= 0) {
-    return res
-      .status(StatusCodes.NO_CONTENT)
-      .json({ message: "No Users Avaliable" });
-  }
+  //console.log(users);
   return res
     .status(StatusCodes.OK)
     .json({ numberOfUsers: users.length, users });
@@ -80,28 +76,36 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
 // Updating the user controller
 export const updateuserCtrl = asyncHandler(async (req, res) => {
-  console.log(req.user);
+  // console.log(req.user);
   const { id } = req.params;
-  console.log(id);
+  // console.log(id);
   const updatedUser = await updateUserService({ id }, req.body);
-  return res.status(StatusCodes.OK).json({ status: "successful", updatedUser });
+  return res
+    .status(StatusCodes.OK)
+    .json({ status: "successfully Updated User", updatedUser });
 });
 
 // Block User controller
 export const blockUserCtrl = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  console.log(id);
-  const blockUser = await blockUserService({ id }, req.body);
-  return res.status(StatusCodes.OK).json({ status: "User blocked", blockUser });
+  // console.log(id);
+  const blockedUser = await blockUserService({ id }, req.body);
+  return res.status(StatusCodes.OK).json({
+    status: "User blocked Successfully",
+    userData: { userBlocked: blockedUser.isBlocked },
+  });
 });
 
 // Unblock User
 export const UnBlockUserCtrl = asyncHandler(async (req, res) => {
-  console.log(req.user);
+  // console.log(req.user);
   const { id } = req.params;
-  console.log(id);
-  const unblockUser = await unBlockUserService({ id }, req.body);
+  // console.log(id);
+  const unblockedUser = await unBlockUserService({ id }, req.body);
   return res
     .status(StatusCodes.OK)
-    .json({ status: "User Un-Blocked", unblockUser });
+    .json({
+      status: `User Un-Blocked Successfully`,
+      userData: { userBlocked: unblockedUser.isBlocked },
+    });
 });
