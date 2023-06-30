@@ -5,15 +5,16 @@ import asyncHandler from "express-async-handler";
 import UnauthenticatedError from "../helpers/unauthenticated.js";
 
 // creating the authentication middleware to authenticate the user.
-export const authMiddleware = asyncHandler(async (req, res, next) => {
+export const auth = asyncHandler(async (req, res, next) => {
   let token;
   if (req?.headers?.authorization?.startsWith("Bearer ")) {
     token = req.headers.authorization.split(" ")[1];
+    console.log(req.user);
     try {
       if (token) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log(decoded);
-        const user = await authModel.findById(decoded?.id);
+        const user = await authModel.findById(decoded?.userId);
         req.user = user;
         next();
       }
@@ -34,7 +35,7 @@ export const authMiddleware = asyncHandler(async (req, res, next) => {
 
 // Creating the middleware to handle the admin authorization and authentication
 export const isAdmin = asyncHandler(async (req, res, next) => {
-  console.log(req.user);
+  // console.log(req.user);
   const { email } = req.user;
   const adminUser = await authModel.findOne({ email });
   if (adminUser.role !== "admin")
