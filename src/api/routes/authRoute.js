@@ -6,18 +6,20 @@ import {
   getUser,
   deleteUser,
   updateuserCtrl,
+  blockUserCtrl,
+  UnBlockUserCtrl,
 } from "../controllers/userCtrls.js";
-import { authMiddleware, isAdmin } from "../middlewares/authMiddleware.js";
+import { auth, isAdmin } from "../middlewares/authMiddleware.js";
 
 const authRoute = express.Router();
 
 authRoute.post("/signup", create_a_user);
 authRoute.post("/login", LoginUser);
-authRoute.get("/allusers", authMiddleware, isAdmin, getAllUser);
-authRoute.get("/:id", authMiddleware, isAdmin, getUser);
-authRoute.delete("/:id", authMiddleware, isAdmin, deleteUser);
-authRoute.patch("/:id", authMiddleware, updateuserCtrl);
-authRoute.patch("/block-user/:id", authMiddleware, isAdmin, updateuserCtrl);
-authRoute.patch("/unblock-user/:id", authMiddleware, isAdmin, updateuserCtrl);
+authRoute.get("/allusers", getAllUser);
+authRoute.get("/:id", getUser);
+authRoute.delete("/:id", deleteUser);
+authRoute.patch("/:id", auth, isAdmin, updateuserCtrl);
+authRoute.patch("/block-user/:id", auth, isAdmin, blockUserCtrl);
+authRoute.patch("/unblock-user/:id", auth, isAdmin, UnBlockUserCtrl);
 
 export default authRoute;
