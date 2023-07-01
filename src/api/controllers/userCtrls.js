@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { StatusCodes } from "http-status-codes";
+import { generateRefreshToken } from "../helpers/refreshToken.js";
 import {
   create_user_service,
   login_user_service,
@@ -9,6 +10,7 @@ import {
   updateUserService,
   blockUserService,
   unBlockUserService,
+  HRFT,
 } from "../services/userServices.js";
 
 // User Signup controller
@@ -33,7 +35,10 @@ export const LoginUser = asyncHandler(async (req, res) => {
   }
 
   // Pass email and password separately to login_user_service
-  const { userExists, token } = await login_user_service({ email, password });
+  const { userExists, token, updateLoggedUser } = await login_user_service({
+    email,
+    password,
+  });
 
   // checking if the user with the email exists or not.
   if (!userExists) {
@@ -41,10 +46,25 @@ export const LoginUser = asyncHandler(async (req, res) => {
       errMessage: `The user with the email: ${email} is not registered`,
     });
   }
+  const refreshToken = generateRefreshToken(userExists._id);
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    maxAge: 72 * 60 * 60 * 1000,
+  });
   return res.status(StatusCodes.OK).json({
     userData: { userEmail: email },
     Token: token,
+    refToken: updateLoggedUser.refreshToken,
   });
+});
+
+// Handle refresh Token controller
+export const handleRefreshToken = asyncHandler(async (req, res) => {
+  const { cookies } = req;
+  const accessTokens = await HRFT(cookies);
+  console.log(accessTokens);
+  res.status(StatusCodes.OK).json({ A_T: accessTokens });
 });
 
 // Get all users Controller
@@ -102,10 +122,8 @@ export const UnBlockUserCtrl = asyncHandler(async (req, res) => {
   const { id } = req.params;
   // console.log(id);
   const unblockedUser = await unBlockUserService({ id }, req.body);
-  return res
-    .status(StatusCodes.OK)
-    .json({
-      status: `User Un-Blocked Successfully`,
-      userData: { userBlocked: unblockedUser.isBlocked },
-    });
+  return res.status(StatusCodes.OK).json({
+    status: `User Un-Blocked Successfully`,
+    userData: { userBlocked: unblockedUser.isBlocked },
+  });
 });
