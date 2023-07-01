@@ -4,6 +4,9 @@ import CustomAPIError from "../helpers/custom-errors.js";
 import UnauthenticatedError from "../helpers/unauthenticated.js";
 import { validateMongoDbID } from "../helpers/validateDbId.js";
 import { StatusCodes } from "http-status-codes";
+import { generateToken } from "../helpers/jsonWebToken.js";
+import { generateRefreshToken } from "../helpers/refreshToken.js";
+import jwt from "jsonwebtoken";
 
 // User signup Services
 export const create_user_service = async (userData) => {
@@ -21,7 +24,7 @@ export const create_user_service = async (userData) => {
 
 // Login User service
 export const login_user_service = async (userData) => {
-  const { email, password } = userData; // Extract Email and Password fro userData
+  const { email, password } = userData; // Extract Email and Password from userData
   const userExists = await authModel.findOne({ email: email });
   if (!userExists) {
     throw new UnauthenticatedError(
@@ -29,14 +32,25 @@ export const login_user_service = async (userData) => {
       StatusCodes.NOT_FOUND
     );
   }
+  // comparing the password of the user.
   const isMatch = await userExists.comparePwd(password);
   if (!isMatch) {
     throw new UnauthenticatedError(
       "Password or email didn't match any on our database"
     );
+  } else {
+    //const token = userExists.createJWT();
+    const token = generateToken(userExists._id);
+    const refreshToken = generateRefreshToken(userExists._id);
+    const updateLoggedUser = await authModel.findByIdAndUpdate(
+      userExists._id,
+      {
+        refreshToken: refreshToken,
+      },
+      { new: true }
+    );
+    return { userExists, token, updateLoggedUser };
   }
-  const token = userExists.createJWT();
-  return { userExists, token };
 };
 
 // get all users service
@@ -131,4 +145,39 @@ export const unBlockUserService = async (User) => {
       StatusCodes.NO_CONTENT
     );
   return unblockuser;
+};
+
+// handle refresh Token service 
+export const HRFT = async (cookies) => {
+  const refreshToken = cookies.refreshToken;
+  if (!refreshToken) {
+    throw new CustomAPIError(
+      "There is no refreshToken in cookies",
+      StatusCodes.NOT_FOUND
+    );
+  }
+  const token = await authModel.findOne({ refreshToken });
+  if (!token)
+    throw new CustomAPIError(
+      "There are no refreshTokens in cookies",
+      StatusCodes.UNAUTHORIZED
+    );
+  let accessToken;
+  try {
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+      console.log("decodedData: ", decoded);
+      if (err || token.id !== decoded.id) {
+        throw new CustomAPIError(
+          "There is something wrong with the refresh token"
+        );
+      }
+      accessToken = generateToken(token.id);
+    });
+  } catch (error) {
+    throw new CustomAPIError(
+      "Error verifying refresh token",
+      StatusCodes.UNAUTHORIZED
+    );
+  }
+  return accessToken;
 };
