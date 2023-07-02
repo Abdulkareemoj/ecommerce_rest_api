@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import { StatusCodes } from "http-status-codes";
 import { generateRefreshToken } from "../helpers/refreshToken.js";
+import { authModel } from "../models/userModels.js";
 import {
   create_user_service,
   login_user_service,
@@ -10,7 +11,8 @@ import {
   updateUserService,
   blockUserService,
   unBlockUserService,
-  HRFT,
+  handle_refresh_token_service,
+  LogoutService,
 } from "../services/userServices.js";
 
 // User Signup controller
@@ -57,14 +59,6 @@ export const LoginUser = asyncHandler(async (req, res) => {
     Token: token,
     refToken: updateLoggedUser.refreshToken,
   });
-});
-
-// Handle refresh Token controller
-export const handleRefreshToken = asyncHandler(async (req, res) => {
-  const { cookies } = req;
-  const accessTokens = await HRFT(cookies);
-  console.log(accessTokens);
-  res.status(StatusCodes.OK).json({ A_T: accessTokens });
 });
 
 // Get all users Controller
@@ -127,3 +121,54 @@ export const UnBlockUserCtrl = asyncHandler(async (req, res) => {
     userData: { userBlocked: unblockedUser.isBlocked },
   });
 });
+
+// Handle refresh Token controller
+export const handleRefreshToken = asyncHandler(async (req, res) => {
+  const { cookies } = req;
+  const accessTokens = await handle_refresh_token_service(cookies);
+  console.log(accessTokens);
+  res.status(StatusCodes.OK).json({ A_T: accessTokens });
+});
+
+// Log out controller functionality
+export const logoutUserCtrl = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  const result = await LogoutService(refreshToken);
+  if (!result) {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+    });
+    return res.sendStatus(204); // forbidden
+  }
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+  });
+  res.sendStatus(200); // success
+});
+
+/**
+ * const logout = asyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+  const refreshToken = cookie.refreshToken;
+  const user = await User.findOne({ refreshToken });
+  if (!user) {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+    });
+    return res.sendStatus(204); // forbidden
+  }
+  await User.findOneAndUpdate(refreshToken, {
+    refreshToken: "",
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+  });
+  res.sendStatus(204); // forbidden
+});
+
+ */
