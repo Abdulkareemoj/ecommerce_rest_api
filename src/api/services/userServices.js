@@ -64,7 +64,7 @@ export const get_all_users_service = async (users) => {
 
 // Get a Single user Service
 export const get_single_user_service = async (userID) => {
-  const { id } = userID; // destructure the user ID from the user
+  const id = userID; // destructure the user ID from the user
   validateMongoDbID(id);
   const userExists = await authModel.findById({ _id: id });
   console.log(userExists);
@@ -147,12 +147,12 @@ export const unBlockUserService = async (User) => {
   return unblockuser;
 };
 
-// handle refresh Token service 
-export const HRFT = async (cookies) => {
+// handle refresh Token service
+export const handle_refresh_token_service = async (cookies) => {
   const refreshToken = cookies.refreshToken;
   if (!refreshToken) {
     throw new CustomAPIError(
-      "There is no refreshToken in cookies",
+      "There is no refresh token in cookies",
       StatusCodes.NOT_FOUND
     );
   }
@@ -180,4 +180,19 @@ export const HRFT = async (cookies) => {
     );
   }
   return accessToken;
+};
+
+// Logout Service functionality
+export const LogoutService = async (cookies) => {
+  const refreshToken = cookies.refreshToken;
+  if (!refreshToken) {
+    throw new CustomAPIError(
+      "There is no refresh token in cookies",
+      StatusCodes.NOT_FOUND
+    );
+  }
+  const user = await authModel.findOne({ refreshToken });
+  if (!user) {
+    
+  }
 };
