@@ -9,6 +9,7 @@ import {
   blockUserCtrl,
   UnBlockUserCtrl,
   handleRefreshToken,
+  logoutUserCtrl,
 } from "../controllers/userCtrls.js";
 import { auth, isAdmin } from "../middlewares/authMiddleware.js";
 
@@ -19,6 +20,7 @@ authRoute.post("/login", LoginUser);
 authRoute.get("/allusers", getAllUser);
 authRoute.get("/refresh-token", handleRefreshToken);
 authRoute.get("/:id", getUser);
+authRoute.get("/logout", logoutUserCtrl);
 authRoute.delete("/:id", deleteUser);
 authRoute.patch("/:id", auth, isAdmin, updateuserCtrl);
 authRoute.patch("/block-user/:id", auth, isAdmin, blockUserCtrl);
