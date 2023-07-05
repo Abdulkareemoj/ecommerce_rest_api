@@ -159,7 +159,7 @@ export const handle_refresh_token_service = async (cookies) => {
   const token = await authModel.findOne({ refreshToken });
   if (!token)
     throw new CustomAPIError(
-      "There are no refreshTokens in cookies",
+      "There are no refresh Tokens in cookies",
       StatusCodes.UNAUTHORIZED
     );
   let accessToken;
@@ -168,7 +168,8 @@ export const handle_refresh_token_service = async (cookies) => {
       console.log("decodedData: ", decoded);
       if (err || token.id !== decoded.id) {
         throw new CustomAPIError(
-          "There is something wrong with the refresh token"
+          "There is something wrong with the refresh token",
+          StatusCodes.NOT_ACCEPTABLE
         );
       }
       accessToken = generateToken(token.id);
@@ -184,15 +185,38 @@ export const handle_refresh_token_service = async (cookies) => {
 
 // Logout Service functionality
 export const LogoutService = async (cookies) => {
-  const refreshToken = cookies.refreshToken;
+  const refreshToken = cookies;
   if (!refreshToken) {
     throw new CustomAPIError(
       "There is no refresh token in cookies",
       StatusCodes.NOT_FOUND
     );
-  }
-  const user = await authModel.findOne({ refreshToken });
-  if (!user) {
-    
+    const token = await authModel.findOne({ refreshToken });
+
+    if (!token) {
+      throw new CustomAPIError(
+        "There are no refresh token in cookies",
+        StatusCodes.UNAUTHORIZED
+      );
+    }
+
+    try {
+      jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+        console.log("decodedData: ", decoded);
+        if (err || token.id !== decoded.id) {
+          throw new CustomAPIError(
+            "There is something wrong with the refresh token",
+            StatusCodes.NOT_ACCEPTABLE
+          );
+        }
+        // Assuming you have a blacklistTokens model
+        blacklistTokens.create({ token: refreshToken });
+      });
+    } catch (error) {
+      throw new CustomAPIError(
+        "Error verifying refresh token",
+        StatusCodes.UNAUTHORIZED
+      );
+    }
   }
 };

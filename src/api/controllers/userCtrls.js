@@ -1,7 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { StatusCodes } from "http-status-codes";
 import { generateRefreshToken } from "../helpers/refreshToken.js";
-import { authModel } from "../models/userModels.js";
 import {
   create_user_service,
   login_user_service,
@@ -147,28 +146,3 @@ export const logoutUserCtrl = asyncHandler(async (req, res) => {
   });
   res.sendStatus(200); // success
 });
-
-/**
- * const logout = asyncHandler(async (req, res) => {
-  const cookie = req.cookies;
-  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
-  const refreshToken = cookie.refreshToken;
-  const user = await User.findOne({ refreshToken });
-  if (!user) {
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: true,
-    });
-    return res.sendStatus(204); // forbidden
-  }
-  await User.findOneAndUpdate(refreshToken, {
-    refreshToken: "",
-  });
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: true,
-  });
-  res.sendStatus(204); // forbidden
-});
-
- */
