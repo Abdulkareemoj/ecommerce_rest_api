@@ -84,7 +84,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
   // Destructuring the ID field for req.params
   const { id } = req.params;
   const userDataId = await delete_single_user({ id });
-  return res.status(StatusCodes.OK).json({ userDataId });
+  return res.status(StatusCodes.OK).json({status: "Deleted User Successfully",  userDataId });
 });
 
 // Updating the user controller

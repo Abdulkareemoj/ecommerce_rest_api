@@ -52,3 +52,15 @@ export const updateProductService = async (prodId, updateData) => {
     );
   return updateProduct;
 };
+
+// Deleting a product Service
+export const deleteProductService = async (prodID) => {
+  const { id } = prodID;
+  const product = await productModel.findOneAndDelete({ _id: id });
+  console.log(product);
+  if (!product)
+    throw new CustomAPIError(
+      `The Product with the id: ${id} was not found to be deleted`
+    );
+  return product;
+};
