@@ -24,6 +24,7 @@ import { customErrorLogger } from "../src/api/utils/errCustomLogger.js";
 
 // <======= Routes Imports begins here ==========>
 import authRoute from "../src/api/routes/authRoute.js";
+import productRoute from "../src/api/routes/productRoutes.js";
 // <======= Routes Imports ends here ==========>
 dotenv.config();
 
@@ -64,6 +65,7 @@ app.use(
 );
 
 app.use("/api/v1/mall/user", authRoute);
+app.use("/api/v1/mall/products", productRoute);
 
 app.get("/", (req, res, next) => {
   req.session.isAuth = true;

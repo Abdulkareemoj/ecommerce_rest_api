@@ -74,7 +74,7 @@ export const getUser = asyncHandler(async (req, res) => {
   // Destructuring the _id field from the req.params
   const { id } = req.params;
 
-  const userDataID = await get_single_user_service({ id });
+  const userDataID = await get_single_user_service(id);
 
   return res.status(StatusCodes.OK).json({ userDataID });
 });
