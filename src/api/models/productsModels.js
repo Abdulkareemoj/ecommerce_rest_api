@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
   },
   slug: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
     lowercase: true,
   },
@@ -21,14 +21,12 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   category: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     required: true,
-    ref: "Category",
   },
   brand: {
     type: String,
     required: true,
-    enum: ["Apple", "Microsoft", "Samsung", "Lenovo"],
   },
   sold: {
     type: Number,
@@ -40,7 +38,7 @@ const productSchema = new mongoose.Schema({
   },
   color: {
     type: String,
-    enum: ["Black", "Brown", "Red"],
+    required: true,
   },
   ratings: [
     {

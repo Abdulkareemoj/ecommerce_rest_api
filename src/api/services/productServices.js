@@ -20,7 +20,7 @@ export const getAllProductsService = async (products) => {
   return allProducts;
 };
 
-// Get a single product by its ID Service 
+// Get a single product by its ID Service
 export const getSingleProductService = async (productID) => {
   const productExists = await productModel.findById({ _id: productID });
   console.log(productExists);
@@ -31,4 +31,24 @@ export const getSingleProductService = async (productID) => {
     );
   }
   return productExists;
+};
+
+// updating a product Service
+export const updateProductService = async (prodId, updateData) => {
+  const { id } = prodId;
+  const updateProduct = await productModel.findByIdAndUpdate(
+    { _id: id },
+    updateData,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+  console.log(prodId);
+  if (!updateProduct)
+    throw new CustomAPIError(
+      `The Product with the id: ${id} was not found to be updated.`,
+      StatusCodes.NOT_FOUND
+    );
+  return updateProduct;
 };
