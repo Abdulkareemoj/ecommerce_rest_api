@@ -25,11 +25,20 @@ export const create_product = asyncHandler(async (req, res) => {
 
 // get all products controller
 export const get_all_products = asyncHandler(async (req, res) => {
-  const allprods = await getAllProductsService();
-  //   console.log(allprods);
+  const queryObject = { ...req.query };
+  const excludedFields = ["page", "sort", "limit", "fields"];
+  excludedFields.forEach((el) => delete queryObject[el]);
+  // console.log(queryObject, req.query);
+
+  let queryStr = JSON.stringify(queryObject);
+  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+  const query = await getAllProductsService(JSON.parse(queryStr));
+  const product = query;
+  // console.log(req.query);
+  // console.log(allprods);
   return res
     .status(StatusCodes.OK)
-    .json({ numberOfProducts: allprods.length, products: allprods });
+    .json({ numberOfProducts: product.length, product });
 });
 
 // getting a single product
