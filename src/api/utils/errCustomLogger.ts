@@ -14,7 +14,9 @@ const myFormat = format.printf(({ level, meta, timestamp }) => {
   return `${timestamp} ${level}: ${meta.message}`;
 });
 
-export const customErrorLogger = {
+
+
+const customErrorLogger = {
   transports: [
     new transports.Console(),
     new transports.File({
@@ -28,3 +30,5 @@ export const customErrorLogger = {
     myFormat
   ),
 };
+
+export default customErrorLogger

@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { consoleLogger } from "../utils/componentLogger.js";
+// import { consoleLogger } from "../utils/componentLogger.js";
+import { UserDataInterface } from "../interfaces/user_interface";
 
 // Declare the Schema of the Mongo model
 const userSchema = new mongoose.Schema(
@@ -52,7 +53,7 @@ const userSchema = new mongoose.Schema(
     whishlists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
     refreshToken: {
       type: String,
-    }
+    },
   },
   {
     timestamps: true,
@@ -77,14 +78,14 @@ userSchema.methods.createJWT = function () {
       userId: this._id,
       name: this.username,
     },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET!,
     { expiresIn: process.env.JWT_EXP }
   );
 };
 
-userSchema.methods.comparePwd = async function (pwd) {
+userSchema.methods.comparePwd = async function (pwd: string) {
   const comparePwd = await bcrypt.compare(pwd, this.password);
-  consoleLogger.info(comparePwd);
+  console.info(comparePwd);
   return comparePwd;
 };
 

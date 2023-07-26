@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
+import { ProductDataInterface } from "../interfaces/product_Interface";
 
-const productSchema = new mongoose.Schema({
+const productSchema = new Schema<ProductDataInterface>({
   title: {
     type: String,
     required: true,
@@ -39,7 +40,7 @@ const productSchema = new mongoose.Schema({
     select: false,
   },
   images: {
-    type: Array,
+    type: [String],
   },
   color: {
     type: String,
@@ -48,10 +49,13 @@ const productSchema = new mongoose.Schema({
   ratings: [
     {
       start: Number,
-      postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+      postedBy: { type: Schema.Types.ObjectId, ref: "UserModel" },
     },
     { timestamps: true },
   ],
 });
 
-export const productModel = mongoose.model("ProductModel", productSchema);
+export const productModel = model<ProductDataInterface>(
+  "ProductModel",
+  productSchema
+);
