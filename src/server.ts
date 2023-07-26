@@ -17,14 +17,14 @@ import logger from "morgan";
 import connectDb from "../src/api/config/dbconfig.js";
 import __404_err_page from "../src/api/middlewares/notFound.js";
 import errorHandlerMiddleware from "../src/api/middlewares/errHandler.js";
-import { customLogger, errorCustomLogger } from "../src/api/utils/logger.js";
-import { consoleLogger } from "../src/api/utils/componentLogger.js";
-import { customErrorLogger } from "../src/api/utils/errCustomLogger.js";
+//import { customLogger, errorCustomLogger } from "../src/api/utils/logger.js";
+//import { consoleLogger } from "../src/api/utils/componentLogger.js";
+// import { customErrorLogger } from "../src/api/utils/errCustomLogger.js";
 //Module Dependencies ends here
 
 // <======= Routes Imports begins here ==========>
-import authRoute from "../src/api/routes/authRoute.js";
-import productRoute from "../src/api/routes/productRoutes.js";
+import authRoute from "./api/routes/authRoute.js";
+import productRoute from "./api/routes/productRoutes.js";
 // <======= Routes Imports ends here ==========>
 dotenv.config();
 
@@ -32,12 +32,12 @@ const app = express();
 
 const MongoDBStore = MongodbSession(session);
 const store = new MongoDBStore({
-  uri: process.env.MONGO_URL,
+  uri: process.env.MONGO_URL!,
   collection: "Sessions-Collection",
-  ttl: 60 * 60, // session will expire in 1hr
+  //ttl: 60 * 60, // session will expire in 1hr
 });
 // Middleware functions
-app.use(customLogger);
+//app.use(customLogger);
 app.use(xss());
 app.use(cors());
 app.use(helmet());
@@ -53,7 +53,7 @@ if (process.env.NODE_ENV !== "production") {
 app.use(
   session({
     resave: false,
-    secret: process.env.SESSION_SECRET_KEY,
+    secret: process.env.SESSION_SECRET_KEY!,
     saveUninitialized: false,
     store: store,
     cookie: {
@@ -68,7 +68,7 @@ app.use("/api/v1/mall/user", authRoute);
 app.use("/api/v1/mall/products", productRoute);
 
 app.get("/", (req, res, next) => {
-  req.session.isAuth = true;
+  // req.session.isAuth = true;
   /*  console.log(req.session);
   console.log(req.session.id); */
   res
@@ -84,7 +84,7 @@ const Port = process.env.PORT || 4000;
 
 const startServer = async () => {
   try {
-    await connectDb(process.env.MONGO_URL);
+    await connectDb(process.env.MONGO_URL!);
     app.listen(Port, () =>
       consoleLogger.info(`Server listening on http:\//localhost:${Port}`)
     );

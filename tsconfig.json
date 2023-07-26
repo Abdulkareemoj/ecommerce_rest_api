@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "es2020",
+    "rootDir": "src",
+    "outDir": "dist",
+    // "removeComments": true,
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    //"forceConsistentCasingInFileNames": true,
+    // "strict": true,
+    // "strictNullChecks": true,
+    // "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    "skipLibCheck": true,
+    "moduleResolution": "Node",
+    "lib": ["esnext"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": ["src/**/*.ts", "/src/types/**/*.d.ts"],
+  "exclude": ["node_modules"]
+}

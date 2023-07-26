@@ -3,7 +3,7 @@
 import expressWinston from "express-winston";
 
 import { consoleLogger } from "./componentLogger.js";
-import { customErrorLogger } from "./errCustomLogger.js";
+import  customErrorLogger  from "./errCustomLogger.js";
 
 export const customLogger = expressWinston.logger({
   winstonInstance: consoleLogger,

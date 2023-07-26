@@ -27,7 +27,7 @@ export const consoleLogger = createLogger({
     }),
     new transports.MongoDB({
       // saving logs to mongodb
-      db: process.env.MONGO_URL,
+      db: process.env.MONGO_URL!,
       options: {
         useUnifiedTopology: true,
       },
@@ -47,5 +47,3 @@ export const consoleLogger = createLogger({
     format.metadata()
   ),
 });
-
-
