@@ -1,4 +1,4 @@
-import CustomAPIError from "../helpers/custom-errors.js";
+import CustomAPIError from "../helpers/custom-errors";
 import { Request, Response, NextFunction, } from "express";
 const errorHandlerMiddleware = (
   err: Error,

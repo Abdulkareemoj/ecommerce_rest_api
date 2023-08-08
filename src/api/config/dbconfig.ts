@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { consoleLogger } from "../utils/componentLogger.js";
-//import { customErrorLogger } from "../utils/errCustomLogger.js";
+import { consoleLogger } from "../utils/componentLogger";
+//import { customErrorLogger } from "../utils/errCustomLogger";
 
 const connectDB = async (url: string) => {
   try {

@@ -10,8 +10,8 @@ import {
   UnBlockUserCtrl,
   handleRefreshToken,
   logoutUserCtrl,
-} from "../controllers/userCtrls.js";
-import { auth, isAdmin } from "../middlewares/authMiddleware.js";
+} from "../controllers/userCtrls";
+import { auth, isAdmin } from "../middlewares/authMiddleware";
 
 const authRoute = express.Router();
 

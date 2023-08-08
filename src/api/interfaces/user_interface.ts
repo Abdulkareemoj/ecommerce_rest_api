@@ -8,10 +8,12 @@ export interface UserDataInterface extends Document {
   password: string;
   role: string;
   isBlocked: boolean;
-  cart: string[];
-  address: Types.ObjectId[]; // Assuming Address model uses Types.ObjectId as well
-  whishlists: Types.ObjectId[]; // Assuming Product model uses Types.ObjectId as well
+  cart: Types.ObjectId[];
+  address: Types.ObjectId[];
+  whishlists: Types.ObjectId[];
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
+  createJWT: () => string;
+  comparePwd: (pwd: string) => Promise<boolean>;
 }

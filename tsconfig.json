@@ -4,13 +4,13 @@
     "module": "es2020",
     "rootDir": "src",
     "outDir": "dist",
-    // "removeComments": true,
+    "removeComments": true,
     "noEmitOnError": true,
     "esModuleInterop": true,
-    //"forceConsistentCasingInFileNames": true,
-    // "strict": true,
-    // "strictNullChecks": true,
-    // "noUnusedLocals": false,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": false,
     "allowUnreachableCode": false,
     "skipLibCheck": true,
@@ -20,5 +20,5 @@
     "emitDecoratorMetadata": true
   },
   "include": ["src/**/*.ts", "/src/types/**/*.d.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "package.json"]
 }

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import CustomAPIError from "./custom-errors.js";
+import CustomAPIError from "./custom-errors";
 import { StatusCodes } from "http-status-codes";
 
 export const validateMongoDbID = (id: string) => {

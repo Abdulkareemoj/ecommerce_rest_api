@@ -1,5 +1,5 @@
 import { createLogger, transports, format } from "winston";
-import MongoDB from "winston-mongodb";
+import {MongoDB} from "winston-mongodb";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";

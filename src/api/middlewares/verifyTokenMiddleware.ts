@@ -1,6 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { Request as ExpressRequest, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+interface Request extends ExpressRequest {
+  user?: any;
+}
 
 export const verifyRefToken = (req:Request, res:Response, next:NextFunction) => {
   const refreshToken = req.headers["x-refresh-token"] || req.body.refreshToken;
@@ -8,8 +12,8 @@ export const verifyRefToken = (req:Request, res:Response, next:NextFunction) => 
   if (!refreshToken) return res.status(StatusCodes.UNAUTHORIZED);
 
   try {
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN!);
-    req.userId = decoded.userId;
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN!) as JwtPayload;
+    req.user = decoded.userId as JwtPayload;
     next();
   } catch (error) {
     return res

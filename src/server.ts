@@ -1,6 +1,7 @@
 // external dependencies
+import "reflect-metadata";
 import "express-async-errors";
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
@@ -14,17 +15,17 @@ import dotenv from "dotenv";
 import logger from "morgan";
 
 // module dependencies
-import connectDb from "../src/api/config/dbconfig.js";
-import __404_err_page from "../src/api/middlewares/notFound.js";
-import errorHandlerMiddleware from "../src/api/middlewares/errHandler.js";
-//import { customLogger, errorCustomLogger } from "../src/api/utils/logger.js";
-//import { consoleLogger } from "../src/api/utils/componentLogger.js";
-// import { customErrorLogger } from "../src/api/utils/errCustomLogger.js";
+import connectDb from "../src/api/config/dbconfig";
+import __404_err_page from "../src/api/middlewares/notFound";
+import errorHandlerMiddleware from "../src/api/middlewares/errHandler";
+import { customLogger, errorCustomLogger } from "../src/api/utils/logger";
+import { consoleLogger } from "../src/api/utils/componentLogger";
+import customErrorLogger from "../src/api/utils/errCustomLogger";
 //Module Dependencies ends here
 
 // <======= Routes Imports begins here ==========>
-import authRoute from "./api/routes/authRoute.js";
-import productRoute from "./api/routes/productRoutes.js";
+import authRoute from "./api/routes/authRoute";
+import productRoute from "./api/routes/productRoutes";
 // <======= Routes Imports ends here ==========>
 dotenv.config();
 
@@ -67,7 +68,7 @@ app.use(
 app.use("/api/v1/mall/user", authRoute);
 app.use("/api/v1/mall/products", productRoute);
 
-app.get("/", (req, res, next) => {
+app.get("/", (res: Response) => {
   // req.session.isAuth = true;
   /*  console.log(req.session);
   console.log(req.session.id); */
@@ -88,7 +89,7 @@ const startServer = async () => {
     app.listen(Port, () =>
       consoleLogger.info(`Server listening on http:\//localhost:${Port}`)
     );
-  } catch (err) {
+  } catch (err: Error | any) {
     customErrorLogger.error(err.message);
     process.exit(1);
   }
