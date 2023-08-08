@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-// import { consoleLogger } from "../utils/componentLogger.js";
+import { consoleLogger } from "../utils/componentLogger";
 import { UserDataInterface } from "../interfaces/user_interface";
 
 // Declare the Schema of the Mongo model
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema<UserDataInterface>(
   {
     firstName: {
       type: String,
@@ -20,12 +20,12 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Please an email address is mandatory."],
-      unique: [true, "This email address is currently in use"],
+      unique: true,
     },
     mobileNumber: {
       type: String,
       required: [true, "Please your mobile number mandatory."],
-      unique: [true, "This mobile number is currently in use"],
+      unique: true,
     },
     password: {
       type: String,
@@ -41,16 +41,16 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     cart: {
-      type: Array,
+      type: [Schema.Types.ObjectId],
       default: [],
     },
     address: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "Address",
       },
     ],
-    whishlists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    whishlists: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     refreshToken: {
       type: String,
     },
@@ -76,7 +76,7 @@ userSchema.methods.createJWT = function () {
   return jwt.sign(
     {
       userId: this._id,
-      name: this.username,
+      email: this.email,
     },
     process.env.JWT_SECRET!,
     { expiresIn: process.env.JWT_EXP }
@@ -85,9 +85,9 @@ userSchema.methods.createJWT = function () {
 
 userSchema.methods.comparePwd = async function (pwd: string) {
   const comparePwd = await bcrypt.compare(pwd, this.password);
-  console.info(comparePwd);
+  consoleLogger.info(comparePwd);
   return comparePwd;
 };
 
 //Export the model
-export const authModel = mongoose.model("Usermodel", userSchema);
+export const authModel = model<UserDataInterface>("Usermodel", userSchema);

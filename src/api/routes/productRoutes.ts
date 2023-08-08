@@ -1,12 +1,12 @@
 import express from "express";
-import { isAdmin, auth } from "../middlewares/authMiddleware.js";
+import { isAdmin, auth } from "../middlewares/authMiddleware";
 import {
   create_product,
   updateSingleProduct,
   deleteProduct,
   get_all_products,
   getASingleProduct,
-} from "../controllers/productCtrls.js";
+} from "../controllers/productCtrls";
 
 const productRoute = express.Router();
 

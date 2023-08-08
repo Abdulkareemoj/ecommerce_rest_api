@@ -1,5 +1,5 @@
 import { createLogger, transports, format } from "winston";
-import MongoDB from "winston-mongodb";
+// import MongoDB from "winston-mongodb";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -14,9 +14,8 @@ const myFormat = format.printf(({ level, meta, timestamp }) => {
   return `${timestamp} ${level}: ${meta.message}`;
 });
 
+const customErrorLogger = createLogger({
 
-
-const customErrorLogger = {
   transports: [
     new transports.Console(),
     new transports.File({
@@ -29,6 +28,6 @@ const customErrorLogger = {
     format.colorize(),
     myFormat
   ),
-};
+});
 
 export default customErrorLogger

@@ -1,24 +1,41 @@
-import { Request, Response, NextFunction } from "express";
-import { authModel } from "../models/userModels.js";
+import { Response, NextFunction } from "express";
+import { authModel } from "../models/userModels";
 import { StatusCodes } from "http-status-codes";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
-import UnauthenticatedError from "../helpers/unauthenticated.js";
+import UnauthenticatedError from "../helpers/unauthenticated";
+import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
+import lodash from "lodash";
+
+// Define a type guard function for JwtPayload
+function isJwtPayload(decoded: any): decoded is JwtPayload {
+  return typeof decoded === "object" && "id" in decoded;
+}
 
 // creating the authentication middleware to authenticate the user.
 export const auth = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     let token;
     if (req?.headers?.authorization?.startsWith("Bearer ")) {
       token = req.headers.authorization.split(" ")[1];
-      console.log(req.user);
+      console.log("token Data: ", token);
+      console.log("Request User Data: ", req.user);
       try {
         if (token) {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-          //console.log(decoded);
+          const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+          if (isJwtPayload(decoded)) {
+            console.log(decoded.id);
+          }
+          console.log("Decoded Data: ", decoded);
           const user = await authModel.findById(decoded.id);
-          req.user = user;
-          next();
+          if (lodash.isUndefined(user)) {
+            req.user = user;
+            next();
+          }
         }
       } catch (error) {
         throw new UnauthenticatedError(
@@ -37,14 +54,31 @@ export const auth = asyncHandler(
 );
 
 // Creating the middleware to handle the admin authorization and authentication
-export const isAdmin = asyncHandler(async (req, res, next) => {
-  // console.log(req.user);
-  const { email } = req.user;
-  const adminUser = await authModel.findOne({ email });
-  if (adminUser.role !== "admin")
-    throw new UnauthenticatedError(
-      "You are not an an administrator",
-      StatusCodes.UNAUTHORIZED
-    );
-  else next();
-});
+export const isAdmin = asyncHandler(
+  async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    console.log(req.user);
+    const { user } = req;
+    if (user) {
+      const { id } = user;
+      const adminUser = await authModel.findOne({ id });
+      console.log(adminUser);
+      if (adminUser && adminUser.role !== "admin")
+        throw new UnauthenticatedError(
+          "You are not an an administrator",
+          StatusCodes.UNAUTHORIZED
+        );
+      else {
+        next();
+      }
+    } else {
+      throw new UnauthenticatedError(
+        "User Information Not found Please authenticate first.",
+        StatusCodes.UNAUTHORIZED
+      );
+    }
+  }
+);

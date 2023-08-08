@@ -2,8 +2,8 @@
 
 import expressWinston from "express-winston";
 
-import { consoleLogger } from "./componentLogger.js";
-import  customErrorLogger  from "./errCustomLogger.js";
+import { consoleLogger } from "./componentLogger";
+import customErrorLogger from "./errCustomLogger";
 
 export const customLogger = expressWinston.logger({
   winstonInstance: consoleLogger,
@@ -13,6 +13,4 @@ export const customLogger = expressWinston.logger({
 // custom error handler logger
 export const errorCustomLogger = expressWinston.errorLogger({
   winstonInstance: customErrorLogger,
-  statusLevels: true,
 });
-

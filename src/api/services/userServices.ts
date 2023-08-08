@@ -1,15 +1,22 @@
-import { authModel } from "../models/userModels.js";
-import { mailer } from "../config/nodeMailer.js";
-import CustomAPIError from "../helpers/custom-errors.js";
-import UnauthenticatedError from "../helpers/unauthenticated.js";
-import { validateMongoDbID } from "../helpers/validateDbId.js";
+import { authModel } from "../models/userModels";
+import { mailer } from "../config/nodeMailer";
+import CustomAPIError from "../helpers/custom-errors";
+import UnauthenticatedError from "../helpers/unauthenticated";
+import { validateMongoDbID } from "../helpers/validateDbId";
 import { StatusCodes } from "http-status-codes";
-import { generateToken } from "../helpers/jsonWebToken.js";
-import { generateRefreshToken } from "../helpers/refreshToken.js";
-import jwt from "jsonwebtoken";
+import { generateToken } from "../helpers/jsonWebToken";
+import { generateRefreshToken } from "../helpers/refreshToken";
+import { Request } from "express";
+import { UserDataInterface } from "../interfaces/user_interface";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { blacklistTokens } from "../models/blacklistTokens";
+
+interface IDecoded {
+  id: string;
+}
 
 // User signup Services
-export const create_user_service = async (userData) => {
+export const create_user_service = async (userData: UserDataInterface) => {
   const newUser = await authModel.create({ ...userData });
   const userToken = newUser.createJWT();
 
@@ -23,8 +30,18 @@ export const create_user_service = async (userData) => {
 };
 
 // Login User service
-export const login_user_service = async (userData) => {
+export const login_user_service = async (
+  userData: Partial<UserDataInterface>
+) => {
   const { email, password } = userData; // Extract Email and Password from userData
+
+  // checking if both fields are omitted
+  if (!email || !password) {
+    throw new CustomAPIError(
+      `Email and Password are required for login.`,
+      StatusCodes.BAD_REQUEST
+    );
+  }
   const userExists = await authModel.findOne({ email: email });
   if (!userExists) {
     throw new UnauthenticatedError(
@@ -36,11 +53,12 @@ export const login_user_service = async (userData) => {
   const isMatch = await userExists.comparePwd(password);
   if (!isMatch) {
     throw new UnauthenticatedError(
-      "Password or email didn't match any on our database"
+      "Password or email didn't match any on our database",
+      StatusCodes.NOT_FOUND
     );
   } else {
     //const token = userExists.createJWT();
-    const token = generateToken(userExists._id);
+    const token: string = generateToken(userExists._id);
     const refreshToken = generateRefreshToken(userExists._id);
     const updateLoggedUser = await authModel.findByIdAndUpdate(
       userExists._id,
@@ -54,8 +72,8 @@ export const login_user_service = async (userData) => {
 };
 
 // get all users service
-export const get_all_users_service = async (users) => {
-  const getUsers = await authModel.find(users);
+export const get_all_users_service = async (): Promise<UserDataInterface[]> => {
+  const getUsers = await authModel.find();
   if (getUsers.length <= 0) {
     throw new CustomAPIError(`No users found`, StatusCodes.NO_CONTENT);
   }
@@ -63,7 +81,9 @@ export const get_all_users_service = async (users) => {
 };
 
 // Get a Single user Service
-export const get_single_user_service = async (userID) => {
+export const get_single_user_service = async (
+  userID: string
+): Promise<UserDataInterface> => {
   const id = userID; // destructure the user ID from the user
   validateMongoDbID(id);
   const userExists = await authModel.findById({ _id: id });
@@ -78,10 +98,12 @@ export const get_single_user_service = async (userID) => {
 };
 
 //Delete a single user service
-export const delete_single_user = async (userId) => {
+export const delete_single_user = async (
+  userId: Partial<UserDataInterface>
+): Promise<UserDataInterface> => {
   const { id } = userId;
   validateMongoDbID(id);
-  const user = await authModel.findOneAndDelete({ _id: id });
+  const user = await authModel.findOneAndDelete({ _id: userId.id });
   console.log(user);
   if (!user)
     throw new CustomAPIError(
@@ -92,7 +114,10 @@ export const delete_single_user = async (userId) => {
 };
 
 // Updating the user Service
-export const updateUserService = async (userId, updateData) => {
+export const updateUserService = async (
+  userId: Partial<UserDataInterface>,
+  updateData: UserDataInterface
+): Promise<UserDataInterface> => {
   const { id } = userId;
   validateMongoDbID(id);
   const updateuser = await authModel.findOneAndUpdate({ _id: id }, updateData, {
@@ -110,7 +135,9 @@ export const updateUserService = async (userId, updateData) => {
 };
 
 // blocking a user service
-export const blockUserService = async (User) => {
+export const blockUserService = async (
+  User: Partial<UserDataInterface>
+): Promise<UserDataInterface> => {
   const { id } = User;
   validateMongoDbID(id);
   const blockUser = await authModel.findByIdAndUpdate(
@@ -129,7 +156,9 @@ export const blockUserService = async (User) => {
 };
 
 // unblocking a user
-export const unBlockUserService = async (User) => {
+export const unBlockUserService = async (
+  User: Partial<UserDataInterface>
+): Promise<UserDataInterface> => {
   const { id } = User;
   validateMongoDbID(id);
   const unblockuser = await authModel.findByIdAndUpdate(
@@ -148,7 +177,9 @@ export const unBlockUserService = async (User) => {
 };
 
 // handle refresh Token service
-export const handle_refresh_token_service = async (cookies) => {
+export const handle_refresh_token_service = async (
+  cookies: UserDataInterface
+) => {
   const refreshToken = cookies.refreshToken;
   if (!refreshToken) {
     throw new CustomAPIError(
@@ -164,9 +195,10 @@ export const handle_refresh_token_service = async (cookies) => {
     );
   let accessToken;
   try {
-    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
-      console.log("decodedData: ", decoded);
-      if (err || token.id !== decoded.id) {
+    jwt.verify(refreshToken, process.env.JWT_SECRET!, (err, decoded) => {
+      const decodeJWT = decoded as IDecoded;
+      console.log("decodedData: ", decodeJWT);
+      if (err || !decoded || token.id !== decodeJWT.id) {
         throw new CustomAPIError(
           "There is something wrong with the refresh token",
           StatusCodes.NOT_ACCEPTABLE
@@ -184,39 +216,42 @@ export const handle_refresh_token_service = async (cookies) => {
 };
 
 // Logout Service functionality
-export const LogoutService = async (cookies) => {
+export const LogoutService = async (cookies: string): Promise<UserDataInterface | void>=> {
   const refreshToken = cookies;
+
   if (!refreshToken) {
     throw new CustomAPIError(
       "There is no refresh token in cookies",
       StatusCodes.NOT_FOUND
     );
-    const token = await authModel.findOne({ refreshToken });
+  }
+  const token = await authModel.findOne({ refreshToken });
 
-    if (!token) {
-      throw new CustomAPIError(
-        "There are no refresh token in cookies",
-        StatusCodes.UNAUTHORIZED
-      );
-    }
+  if (!token) {
+    throw new CustomAPIError(
+      "There are no refresh token in cookies",
+      StatusCodes.UNAUTHORIZED
+    );
+  }
 
-    try {
-      jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
-        console.log("decodedData: ", decoded);
-        if (err || token.id !== decoded.id) {
-          throw new CustomAPIError(
-            "There is something wrong with the refresh token",
-            StatusCodes.NOT_ACCEPTABLE
-          );
-        }
-        // Assuming you have a blacklistTokens model
-        blacklistTokens.create({ token: refreshToken });
-      });
-    } catch (error) {
-      throw new CustomAPIError(
-        "Error verifying refresh token",
-        StatusCodes.UNAUTHORIZED
-      );
-    }
+  try {
+    jwt.verify(refreshToken, process.env.JWT_SECRET!, (err, decoded) => {
+      const decodeJWT = decoded as IDecoded;
+      console.log("decodedData: ", decodeJWT);
+      if (err || token.id !== decodeJWT.id) {
+        throw new CustomAPIError(
+          "There is something wrong with the refresh token",
+          StatusCodes.NOT_ACCEPTABLE
+        );
+      }
+
+      // Assuming you have a blacklistTokens model
+      blacklistTokens.create({ token: refreshToken });
+    });
+  } catch (error) {
+    throw new CustomAPIError(
+      "Error verifying refresh token",
+      StatusCodes.UNAUTHORIZED
+    );
   }
 };
