@@ -1,5 +1,5 @@
 import express from "express";
-import { isAdmin, auth } from "../middlewares/authMiddleware";
+import { auth, isAdmin } from "../middlewares/authMiddleware";
 import {
   create_product,
   updateSingleProduct,
@@ -10,11 +10,11 @@ import {
 
 const productRoute = express.Router();
 
-productRoute.post("/createproduct", auth, isAdmin, create_product);
 productRoute.get("/allproducts", get_all_products);
 productRoute.get("/:id", getASingleProduct);
 productRoute.use(auth);
 productRoute.use(isAdmin);
+productRoute.post("/createproduct", create_product);
 productRoute.patch("/:id", updateSingleProduct);
 productRoute.delete("/:id", deleteProduct);
 
