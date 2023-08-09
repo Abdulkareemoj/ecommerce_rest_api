@@ -1,18 +1,21 @@
 // external dependencies
 import "reflect-metadata";
 import "express-async-errors";
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
-import xss from "xss-clean";
 import mongoSanitize from "express-mongo-sanitize";
 import { StatusCodes } from "http-status-codes";
 import MongodbSession from "connect-mongodb-session";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import xss from "xss-clean";
 import dotenv from "dotenv";
 import logger from "morgan";
+
+// Reference path for sessions.
+/// <reference path="./api/types/express/custom.d.ts" />
 
 // module dependencies
 import connectDb from "../src/api/config/dbconfig";
@@ -35,11 +38,11 @@ const MongoDBStore = MongodbSession(session);
 const store = new MongoDBStore({
   uri: process.env.MONGO_URL!,
   collection: "Sessions-Collection",
-  //ttl: 60 * 60, // session will expire in 1hr
+  expires: 60 * 60, // session will expire in 1hr
 });
 // Middleware functions
-//app.use(customLogger);
-app.use(xss());
+app.use(customLogger);
+app.use(xss())
 app.use(cors());
 app.use(helmet());
 app.use(logger("dev"));
@@ -68,10 +71,10 @@ app.use(
 app.use("/api/v1/mall/user", authRoute);
 app.use("/api/v1/mall/products", productRoute);
 
-app.get("/", (res: Response) => {
-  // req.session.isAuth = true;
-  /*  console.log(req.session);
-  console.log(req.session.id); */
+app.get("/", (req: Request, res: Response) => {
+  req.session.isAuth = true;
+  console.log(req.session);
+  console.log(req.session.id);
   res
     .status(StatusCodes.PERMANENT_REDIRECT)
     .json({ message: "Welcome to the E-Commerce rest api application." });
