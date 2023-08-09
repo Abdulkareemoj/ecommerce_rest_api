@@ -1,14 +1,10 @@
 import { createLogger, transports, format } from "winston";
-// import MongoDB from "winston-mongodb";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const myFormat = format.printf(({ level, meta, timestamp }) => {
   return `${timestamp} ${level}: ${meta.message}`;

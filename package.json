@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "An Ecommerce Project in ExpressJs and MongoDb",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "dev:serve:nodemon": "nodemon src/server",
     "build": "rimraf dist && npx tsc",
@@ -76,6 +75,7 @@
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
+    "types": "^0.1.1",
     "typescript": "^5.1.6"
   }
 }

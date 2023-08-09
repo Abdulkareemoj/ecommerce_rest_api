@@ -1,14 +1,10 @@
 import { createLogger, transports, format } from "winston";
-import {MongoDB} from "winston-mongodb";
+import { MongoDB } from "winston-mongodb";
 import dotenv from "dotenv";
 import path from "path";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export const consoleLogger = createLogger({
   transports: [
@@ -25,7 +21,7 @@ export const consoleLogger = createLogger({
       level: "info",
       filename: path.join(__dirname, "../../../logs", "infoLogs.log"),
     }),
-    new transports.MongoDB({
+    new MongoDB({
       // saving logs to mongodb
       db: process.env.MONGO_URL!,
       options: {
