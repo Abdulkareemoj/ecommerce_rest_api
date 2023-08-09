@@ -3,4 +3,3 @@ node_modules
 logs
 features.txt
 dist
-yarn.lock
