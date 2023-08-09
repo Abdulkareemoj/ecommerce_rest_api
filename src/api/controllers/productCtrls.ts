@@ -20,7 +20,7 @@ export const create_product = asyncHandler(
     // calling the createProduct controller
     const newProduct = await createProductService(req.body);
     //console.log(newProduct);
-    res
+     res
       .status(StatusCodes.CREATED)
       .json({ ProductData: { ProductDetail: newProduct } });
   }
@@ -42,7 +42,7 @@ export const get_all_products = asyncHandler(
     console.log(query);
 
     // Sorting Products
-    /*   if (req.query.sort) {
+/*       if (req.query.sort) {
     let sortBy: string[] = req.query.sort as string[] 
     let new_sortBy = sortBy.join("");
     query = query.sort(sortBy);
@@ -51,7 +51,7 @@ export const get_all_products = asyncHandler(
   } */
 
     // Limiting the Fields
-    /*   if (req.query.fields) {
+/*       if (req.query.fields) {
     const fields = req.query.fields.split(",").join(" ");
     query = query.select(fields);
   } else {
