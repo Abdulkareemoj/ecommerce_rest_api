@@ -32,8 +32,8 @@ export const auth = asyncHandler(
           }
           console.log("Decoded Data: ", decoded);
           const user = await authModel.findById(decoded.id);
-          if (lodash.isUndefined(user)) {
-            req.user = user;
+          if (!lodash.isUndefined(user)) {
+            req.user = { id: user?.id };
             next();
           }
         }
@@ -60,10 +60,12 @@ export const isAdmin = asyncHandler(
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    console.log(req.user);
+    console.log("UserData ->>>", req.user);
     const { user } = req;
     if (user) {
       const { id } = user;
+      console.log("User ->>>", user);
+      console.log("UserID ->>>", id);
       const adminUser = await authModel.findOne({ id });
       console.log(adminUser);
       if (adminUser && adminUser.role !== "admin")
