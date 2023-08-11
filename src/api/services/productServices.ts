@@ -1,8 +1,11 @@
 import { productModel } from "../models/productsModels";
 import { StatusCodes } from "http-status-codes";
 import CustomAPIError from "../helpers/custom-errors";
-import { Types } from "mongoose"; // Import necessary types from Mongoose
-import { ProductDataInterface } from "../interfaces/product_Interface"; // Import ProductDataInterface
+import { Types, Model } from "mongoose"; // Import necessary types from Mongoose
+import {
+  ProductDataInterface,
+  GetAllProductsOptions,
+} from "../interfaces/product_Interface"; // Import ProductDataInterface
 
 //Create a Product Service
 export const createProductService = async (product: ProductDataInterface) => {
@@ -17,14 +20,38 @@ export const createProductService = async (product: ProductDataInterface) => {
 };
 
 // Fetch All Products Services
-export const getAllProductsService = async () => {
-  const allProducts = await productModel.find({});
+export const getAllProductsService = async (
+  productModel: Model<ProductDataInterface>,
+  options: GetAllProductsOptions
+): Promise<ProductDataInterface[]> => {
+  // Sorting, limiting and pagination of the Products
+  const { sortBy, sortOrder, limit, page, category, brand } = options;
+  const skip = (page - 1) * limit;
+
+  const sortCriteria: any = {};
+  sortCriteria[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+   const query: any = {};
+
+   if (category) {
+     query.category = category;
+   }
+
+   if (brand) {
+     query.brand = brand;
+   }
+
+  const allProducts = await productModel
+    .find()
+    .sort(sortCriteria)
+    .skip(skip)
+    .limit(limit)
+    .exec();
   if (allProducts.length <= 0) {
     throw new CustomAPIError("No products found", StatusCodes.NO_CONTENT);
   }
   return allProducts;
 };
-
 // Get a single product by its ID Service
 export const getSingleProductService = async (productID: string) => {
   const productExists = await productModel.findById({ _id: productID });
