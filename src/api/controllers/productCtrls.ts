@@ -9,6 +9,11 @@ import {
   updateProductService,
   deleteProductService,
 } from "../services/productServices";
+import { productModel } from "../models/productsModels";
+import {
+  GetAllProductsOptions,
+  GetAllProductsQueryParams,
+} from "../interfaces/product_Interface";
 
 // create a new product controller
 export const create_product = asyncHandler(
@@ -20,7 +25,7 @@ export const create_product = asyncHandler(
     // calling the createProduct controller
     const newProduct = await createProductService(req.body);
     //console.log(newProduct);
-     res
+    res
       .status(StatusCodes.CREATED)
       .json({ ProductData: { ProductDetail: newProduct } });
   }
@@ -33,38 +38,27 @@ export const get_all_products = asyncHandler(
     const queryObject = { ...req.query };
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((el) => delete queryObject[el]);
-    // console.log(queryObject, req.query);
-
+    // console.log(`Query: ${queryObject}`);
     let queryStr = JSON.stringify(queryObject);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    let query = getAllProductsService();
-    console.log(query);
+    const { sortBy, sortOrder, limit, page, category, brand } =
+      req.query as GetAllProductsQueryParams;
 
-    // Sorting Products
-/*       if (req.query.sort) {
-    let sortBy: string[] = req.query.sort as string[] 
-    let new_sortBy = sortBy.join("");
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort("-createdAt");
-  } */
+    const options: GetAllProductsOptions = {
+      sortBy: sortBy || "createdAt", // Default sorting by createdAt
+      sortOrder: sortOrder === "desc" ? "desc" : "asc",
+      limit: limit ? parseInt(limit.toString(), 10) : 10,
+      page: page ? parseInt(page.toString(), 10) : 1,
+      category: category || "",
+      brand: brand || "",
+    };
 
-    // Limiting the Fields
-/*       if (req.query.fields) {
-    const fields = req.query.fields.split(",").join(" ");
-    query = query.select(fields);
-  } else {
-    query = query.select("-__v");
-  } */
+    let allProducts = await getAllProductsService(productModel, options);
 
-    const product = await query;
-
-    // console.log(req.query);
-    // console.log(allprods);
     res
       .status(StatusCodes.OK)
-      .json({ numberOfProducts: product.length, product });
+      .json({ numberOfProducts: allProducts.length, allProducts });
   }
 );
 
