@@ -1,7 +1,7 @@
 // external dependencies
 import "reflect-metadata";
 import "express-async-errors";
-import express, { Request, Response } from "express";
+import express, {Application, Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
@@ -32,7 +32,7 @@ import productRoute from "./api/routes/productRoutes";
 // <======= Routes Imports ends here ==========>
 dotenv.config();
 
-const app = express();
+const app:Application = express();
 
 const MongoDBStore = MongodbSession(session);
 const store = new MongoDBStore({
