@@ -25,7 +25,7 @@ export interface ProductDataInterface extends Document {
 }
 
 export interface GetAllProductsOptions {
-  sortBy: string | 'createdAt' | 'title' | 'price';
+  sortBy: string | "createdAt" | "title" | "price";
   sortOrder: "asc" | "desc";
   limit: number;
   page: number;

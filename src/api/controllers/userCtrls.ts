@@ -13,12 +13,10 @@ import {
   unBlockUserService,
   handle_refresh_token_service,
   LogoutService,
+  PwdResetService,
 } from "../services/userServices";
 
-interface LoginRequest {
-  email: string;
-  password: string;
-}
+import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 
 // User Signup controller
 export const create_a_user = asyncHandler(
@@ -160,5 +158,21 @@ export const logoutUserCtrl = asyncHandler(
       secure: true,
     });
     res.sendStatus(200); // success
+  }
+);
+
+export const passwordResetCtrl = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const _id = req.user?.id as string;
+    const { newPassword } = req.body;
+
+    try {
+      const updatedpassword = await PwdResetService(_id, newPassword);
+      res.json(updatedpassword);
+    } catch (error: any) {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: error.message });
+    }
   }
 );

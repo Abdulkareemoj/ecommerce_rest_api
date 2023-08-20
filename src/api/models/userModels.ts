@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { consoleLogger } from "../utils/componentLogger";
 import { UserDataInterface } from "../interfaces/user_interface";
 
@@ -54,6 +55,9 @@ const userSchema = new Schema<UserDataInterface>(
     refreshToken: {
       type: String,
     },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
   },
   {
     timestamps: true,
@@ -66,6 +70,9 @@ const userSchema = new Schema<UserDataInterface>(
 // the password is ran through a bcrypt function
 
 userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
@@ -87,6 +94,16 @@ userSchema.methods.comparePwd = async function (pwd: string) {
   const comparePwd = await bcrypt.compare(pwd, this.password);
   consoleLogger.info(comparePwd);
   return comparePwd;
+};
+
+userSchema.methods.createPasswordResetToken = async function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 10min timeout
+  return resetToken;
 };
 
 //Export the model
