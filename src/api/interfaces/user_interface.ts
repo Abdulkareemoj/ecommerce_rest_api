@@ -16,4 +16,7 @@ export interface UserDataInterface extends Document {
   updatedAt: Date;
   createJWT: () => string;
   comparePwd: (pwd: string) => Promise<boolean>;
+  passwordChangedAt: Date;
+  passwordResetToken: string;
+  passwordResetExpires: Date;
 }

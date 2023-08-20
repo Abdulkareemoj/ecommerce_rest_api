@@ -42,7 +42,7 @@ const store = new MongoDBStore({
 });
 // Middleware functions
 app.use(customLogger);
-app.use(xss())
+app.use(xss());
 app.use(cors());
 app.use(helmet());
 app.use(logger("dev"));

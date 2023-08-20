@@ -216,7 +216,9 @@ export const handle_refresh_token_service = async (
 };
 
 // Logout Service functionality
-export const LogoutService = async (cookies: string): Promise<UserDataInterface | void>=> {
+export const LogoutService = async (
+  cookies: string
+): Promise<UserDataInterface | void> => {
   const refreshToken = cookies;
 
   if (!refreshToken) {
@@ -254,4 +256,21 @@ export const LogoutService = async (cookies: string): Promise<UserDataInterface 
       StatusCodes.UNAUTHORIZED
     );
   }
+};
+
+export const PwdResetService = async (
+  _id: string,
+  newPassword: string
+): Promise<UserDataInterface | void> => {
+  validateMongoDbID(_id);
+  const _user = await authModel.findById(_id);
+
+  if (!_user) {
+    throw new Error("User not Found");
+  }
+
+  _user.password = newPassword;
+  const updatedPassword = await _user.save();
+
+  return updatedPassword;
 };
