@@ -1,7 +1,7 @@
 // external dependencies
 import "reflect-metadata";
 import "express-async-errors";
-import express, {Application, Request, Response } from "express";
+import express, { Application, Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
@@ -13,9 +13,21 @@ import session from "express-session";
 import xss from "xss-clean";
 import dotenv from "dotenv";
 import logger from "morgan";
+import rateLimit from "express-rate-limit";
+import swaggerUI from "swagger-ui-express";
+import YAML from "yamljs";
+import path from "path";
+
 
 // Reference path for sessions.
 /// <reference path="./api/types/express/custom.d.ts" />
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // module dependencies
 import connectDb from "../src/api/config/dbconfig";
@@ -24,15 +36,14 @@ import errorHandlerMiddleware from "../src/api/middlewares/errHandler";
 import { customLogger, errorCustomLogger } from "../src/api/utils/logger";
 import { consoleLogger } from "../src/api/utils/componentLogger";
 import customErrorLogger from "../src/api/utils/errCustomLogger";
-//Module Dependencies ends here
 
 // <======= Routes Imports begins here ==========>
 import authRoute from "./api/routes/authRoute";
 import productRoute from "./api/routes/productRoutes";
-// <======= Routes Imports ends here ==========>
+
 dotenv.config();
 
-const app:Application = express();
+const app: Application = express();
 
 const MongoDBStore = MongodbSession(session);
 const store = new MongoDBStore({
@@ -41,7 +52,10 @@ const store = new MongoDBStore({
   expires: 60 * 60, // session will expire in 1hr
 });
 // Middleware functions
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
 app.use(customLogger);
+app.use(limiter);
 app.use(xss());
 app.use(cors());
 app.use(helmet());
@@ -49,10 +63,9 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(mongoSanitize());
 app.use(cookieParser());
-
 app.use(express.urlencoded({ extended: false }));
 if (process.env.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
+  app.use(morgan("tiny"));
 }
 app.use(
   session({
@@ -67,14 +80,13 @@ app.use(
     },
   })
 );
-
 app.use("/api/v1/mall/user", authRoute);
 app.use("/api/v1/mall/products", productRoute);
 
 app.get("/", (req: Request, res: Response) => {
   req.session.isAuth = true;
-  console.log(req.session);
-  console.log(req.session.id);
+  // console.log(req.session);
+  // console.log(req.session.id);
   res
     .status(StatusCodes.PERMANENT_REDIRECT)
     .json({ message: "Welcome to the E-Commerce rest api application." });
@@ -97,5 +109,4 @@ const startServer = async () => {
     process.exit(1);
   }
 };
-
 startServer();
