@@ -13,7 +13,8 @@ import {
   unBlockUserService,
   handle_refresh_token_service,
   LogoutService,
-  PwdResetService,
+  fgtPwdService,
+  resetPwdService,
 } from "../services/userServices";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
@@ -134,12 +135,14 @@ export const UnBlockUserCtrl = asyncHandler(
 );
 
 // Handle refresh Token controller
-export const handleRefreshToken = asyncHandler(async (req, res) => {
-  const { cookies } = req;
-  const accessTokens = await handle_refresh_token_service(cookies);
-  console.log(accessTokens);
-  res.status(StatusCodes.OK).json({ A_T: accessTokens });
-});
+export const handleRefreshToken = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { cookies } = req;
+    const accessTokens = await handle_refresh_token_service(cookies);
+    console.log(accessTokens);
+    res.status(StatusCodes.OK).json({ A_T: accessTokens });
+  }
+);
 
 // Log out controller functionality
 export const logoutUserCtrl = asyncHandler(
@@ -161,18 +164,19 @@ export const logoutUserCtrl = asyncHandler(
   }
 );
 
-export const passwordResetCtrl = asyncHandler(
-  async (req: AuthenticatedRequest, res: Response) => {
-    const _id = req.user?.id as string;
-    const { newPassword } = req.body;
+// forgot password controller
+export const forgotPassword = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { email } = req.body;
 
-    try {
-      const updatedpassword = await PwdResetService(_id, newPassword);
-      res.json(updatedpassword);
-    } catch (error: any) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: error.message });
-    }
+    await fgtPwdService(email);
+     res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Password reset token sent to email.",
+    });
   }
+);
+
+export const passwordReset = asyncHandler(
+  async (req: Request, res: Response) => {}
 );
