@@ -22,15 +22,15 @@ export const auth = asyncHandler(
     let token;
     if (req?.headers?.authorization?.startsWith("Bearer ")) {
       token = req.headers.authorization.split(" ")[1];
-      console.log("token Data: ", token);
-      console.log("Request User Data: ", req.user);
+      // console.log("token Data: ", token);
+      // console.log("Request User Data: ", req.user);
       try {
         if (token) {
           const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
           if (isJwtPayload(decoded)) {
             console.log(decoded.id);
           }
-          console.log("Decoded Data: ", decoded);
+          // console.log("Decoded Data: ", decoded);
           const user = await authModel.findById(decoded.id);
           if (!lodash.isUndefined(user)) {
             req.user = { id: user?.id };
@@ -64,10 +64,10 @@ export const isAdmin = asyncHandler(
     const { user } = req;
     if (user) {
       const { id } = user;
-      console.log("User ->>>", user);
-      console.log("UserID ->>>", id);
+      // console.log("User ->>>", user);
+      // console.log("UserID ->>>", id);
       const adminUser = await authModel.findOne({ id });
-      console.log(adminUser);
+      // console.log(adminUser);
       if (adminUser && adminUser.role !== "admin")
         throw new UnauthenticatedError(
           "You are not an an administrator",
