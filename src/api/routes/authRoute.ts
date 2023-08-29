@@ -10,7 +10,8 @@ import {
   UnBlockUserCtrl,
   handleRefreshToken,
   logoutUserCtrl,
-  passwordResetCtrl,
+  forgotPassword,
+  passwordReset,
 } from "../controllers/userCtrls";
 import { auth, isAdmin } from "../middlewares/authMiddleware";
 
@@ -23,7 +24,8 @@ authRoute.get("/refresh-token", handleRefreshToken);
 authRoute.get("/logout", logoutUserCtrl);
 authRoute.get("/:id", getUser);
 authRoute.delete("/:id", deleteUser);
-authRoute.put("/password-update", auth, passwordResetCtrl);
+authRoute.post("/forgotpassword", forgotPassword);
+authRoute.patch("/resetpassword/:token", passwordReset);
 authRoute.patch("/:id", auth, isAdmin, updateuserCtrl);
 authRoute.patch("/block-user/:id", auth, isAdmin, blockUserCtrl);
 authRoute.patch("/unblock-user/:id", auth, isAdmin, UnBlockUserCtrl);

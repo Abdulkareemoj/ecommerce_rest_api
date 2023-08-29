@@ -258,19 +258,34 @@ export const LogoutService = async (
   }
 };
 
-export const PwdResetService = async (
-  _id: string,
-  newPassword: string
+// Forgot password service
+export const fgtPwdService = async (
+  user_email: string
 ): Promise<UserDataInterface | void> => {
-  validateMongoDbID(_id);
-  const _user = await authModel.findById(_id);
-
-  if (!_user) {
-    throw new Error("User not Found");
+  try {
+    const user = await authModel.findOne({ user_email });
+  
+    if (!user) {
+      throw new CustomAPIError(
+        `We could not find a user with the given email ${user_email}`,
+        StatusCodes.NOT_ACCEPTABLE
+      );
+    }
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+  
+    const resetUrl = `${process.env.APP_URL}/api/v1/users/resetPassword/${resetToken}`;
+    const message = `We have received a password reset request. 
+    Please use the link below to reset your password:\n\n${resetUrl}\n\nThis link expires after 10 minutes.`;
+    const subject = "Password reset request received";
+    mailer(user_email, subject, message);
+  } catch (error) {
+    throw new CustomAPIError("Could not reset password", StatusCodes.BAD_REQUEST)
   }
-
-  _user.password = newPassword;
-  const updatedPassword = await _user.save();
-
-  return updatedPassword;
 };
+
+// Reset password service
+export const resetPwdService =
+  async (): Promise<UserDataInterface | void> => {};
+
+

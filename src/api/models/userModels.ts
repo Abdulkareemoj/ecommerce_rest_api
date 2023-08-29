@@ -96,13 +96,14 @@ userSchema.methods.comparePwd = async function (pwd: string) {
   return comparePwd;
 };
 
-userSchema.methods.createPasswordResetToken = async function () {
+userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  this.passwordResetExpires = Date.now() + 30 * 60 * 1000; // 10min timeout
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10min timeout
+  console.log(resetToken, this.passwordResetToken);
   return resetToken;
 };
 
