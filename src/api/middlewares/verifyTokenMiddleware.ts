@@ -21,5 +21,3 @@ export const verifyRefToken = (req:Request, res:Response, next:NextFunction) => 
       .json({ error: "Invalid refresh Token" });
   }
 };
-
-
