@@ -102,7 +102,11 @@ userSchema.methods.createPasswordResetToken = function () {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10min timeout
+  
+  const expirationDate = new Date();
+  expirationDate.setMinutes(expirationDate.getMinutes() + 10);
+  
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10min timeout  converting number to date
   console.log(resetToken, this.passwordResetToken);
   return resetToken;
 };
