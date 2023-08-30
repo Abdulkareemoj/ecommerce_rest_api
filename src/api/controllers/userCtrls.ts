@@ -179,7 +179,8 @@ export const forgotPassword = asyncHandler(
 
 export const passwordReset = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { token, password, confirmPassword } = req.body;
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
 
     try {
       await resetPwdService(token, password, confirmPassword);
