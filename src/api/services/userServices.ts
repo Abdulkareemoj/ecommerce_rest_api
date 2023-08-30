@@ -10,6 +10,10 @@ import { Request } from "express";
 import { UserDataInterface } from "../interfaces/user_interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
+import dotenv from "dotenv";
+import crypto from "crypto";
+
+dotenv.config();
 
 interface IDecoded {
   id: string;
@@ -263,8 +267,8 @@ export const fgtPwdService = async (
   user_email: string
 ): Promise<UserDataInterface | void> => {
   try {
-    const user = await authModel.findOne({ user_email });
-  
+    const user = await authModel.findOne({ email: user_email });
+
     if (!user) {
       throw new CustomAPIError(
         `We could not find a user with the given email ${user_email}`,
@@ -273,19 +277,48 @@ export const fgtPwdService = async (
     }
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
-  
+
     const resetUrl = `${process.env.APP_URL}/api/v1/users/resetPassword/${resetToken}`;
     const message = `We have received a password reset request. 
     Please use the link below to reset your password:\n\n${resetUrl}\n\nThis link expires after 10 minutes.`;
     const subject = "Password reset request received";
     mailer(user_email, subject, message);
   } catch (error) {
-    throw new CustomAPIError("Could not reset password", StatusCodes.BAD_REQUEST)
+    throw new CustomAPIError(
+      "Could not reset password",
+      StatusCodes.BAD_REQUEST
+    );
   }
 };
 
 // Reset password service
-export const resetPwdService =
-  async (): Promise<UserDataInterface | void> => {};
+export const resetPwdService = async (
+  token: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<UserDataInterface | void> => {
+  // checking if the user exists with the given token & has not expired.
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await authModel.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
 
+  if (!user) {
+    throw new CustomAPIError(
+      "Token is invalid or it has expired!",
+      StatusCodes.BAD_REQUEST
+    );
+  }
 
+  // Resetting the user password
+  user.password = newPassword;
+  user.confirmPassword = confirmPassword;
+  user.passwordResetExpires = undefined;
+  user.passwordResetToken = undefined;
+  user.passwordChangedAt = new Date(Date.now());
+
+  await user.save();
+
+  return user;
+};

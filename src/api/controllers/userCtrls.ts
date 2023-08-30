@@ -170,13 +170,26 @@ export const forgotPassword = asyncHandler(
     const { email } = req.body;
 
     await fgtPwdService(email);
-     res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Password reset token sent to email.",
+    res.status(StatusCodes.OK).json({
+      status: "success",
+      message: "Password reset link sent to the user email.",
     });
   }
 );
 
 export const passwordReset = asyncHandler(
-  async (req: Request, res: Response) => {}
+  async (req: Request, res: Response): Promise<void> => {
+    const { token, password, confirmPassword } = req.body;
+
+    try {
+      await resetPwdService(token, password, confirmPassword);
+
+      res.status(StatusCodes.OK).json({
+        status: "Success",
+        message: "Password reset Successful",
+      });
+    } catch (error: any) {
+      res.status(StatusCodes.NOT_FOUND).json({ error: error.message });
+    }
+  }
 );
