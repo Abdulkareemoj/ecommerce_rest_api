@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { StatusCodes } from "http-status-codes";
 import slugify from "slugify";
+
 import {
   createProductService,
   getAllProductsService,
   getSingleProductService,
   updateProductService,
   deleteProductService,
-} from "../services/productServices";
+} from "../services/product.services";
 import { productModel } from "../models/productsModels";
 import {
   GetAllProductsOptions,
@@ -77,7 +78,7 @@ export const updateSingleProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     if (req.body.title) req.body.slug = slugify(req.body.title);
     const { id } = req.params;
-    console.log(id);
+    // console.log(id);
     const updateProduct = await updateProductService(id, req.body);
     res
       .status(StatusCodes.OK)
@@ -96,3 +97,4 @@ export const deleteProduct = asyncHandler(
     });
   }
 );
+

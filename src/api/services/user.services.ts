@@ -278,7 +278,7 @@ export const fgtPwdService = async (
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${process.env.APP_URL}/api/v1/users/resetPassword/${resetToken}`;
+    const resetUrl = `http://localhost:4040/api/v1/users/resetPassword/${resetToken}`;
     const message = `We have received a password reset request. 
     Please use the link below to reset your password:\n\n${resetUrl}\n\nThis link expires after 10 minutes.`;
     const subject = "Password reset request received";

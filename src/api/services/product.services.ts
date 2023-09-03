@@ -55,7 +55,7 @@ export const getAllProductsService = async (
 // Get a single product by its ID Service
 export const getSingleProductService = async (productID: string) => {
   const productExists = await productModel.findById({ _id: productID });
-  console.log(productExists);
+  // console.log(productExists);
   if (!productExists) {
     throw new CustomAPIError(
       `the product with the id ${productID} does not exist`,
@@ -79,7 +79,7 @@ export const updateProductService = async (
       runValidators: true,
     }
   );
-  console.log(prodId);
+  // console.log(prodId);
   if (!updateProduct)
     throw new CustomAPIError(
       `The Product with the id: ${prodId} was not found to be updated.`,
@@ -91,7 +91,7 @@ export const updateProductService = async (
 // Deleting a product Service
 export const deleteProductService = async (prodID: string) => {
   const product = await productModel.findOneAndDelete({ _id: prodID });
-  console.log(product);
+  // console.log(product);
   if (!product)
     throw new CustomAPIError(
       `The Product with the id: ${prodID} was not found to be deleted`,
