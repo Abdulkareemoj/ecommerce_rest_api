@@ -15,7 +15,7 @@ import {
   LogoutService,
   fgtPwdService,
   resetPwdService,
-} from "../services/userServices";
+} from "../services/user.services";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 

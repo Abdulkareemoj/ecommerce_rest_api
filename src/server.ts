@@ -18,7 +18,6 @@ import swaggerUI from "swagger-ui-express";
 import YAML from "yamljs";
 import path from "path";
 
-
 // Reference path for sessions.
 /// <reference path="./api/types/express/custom.d.ts" />
 
@@ -38,8 +37,9 @@ import { consoleLogger } from "../src/api/utils/componentLogger";
 import customErrorLogger from "../src/api/utils/errCustomLogger";
 
 // <======= Routes Imports begins here ==========>
-import authRoute from "./api/routes/authRoute";
-import productRoute from "./api/routes/productRoutes";
+import authRoute from "./api/routes/auth.routes";
+import productRoute from "./api/routes/product.routes";
+import blogRoute from "./api/routes/blog.routes";
 
 dotenv.config();
 
@@ -82,6 +82,7 @@ app.use(
 );
 app.use("/api/v1/mall/user", authRoute);
 app.use("/api/v1/mall/products", productRoute);
+app.use("/api/v1/mall/blogs", blogRoute);
 
 app.get("/", (req: Request, res: Response) => {
   req.session.isAuth = true;
