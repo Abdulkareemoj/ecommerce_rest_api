@@ -1,5 +1,5 @@
 import { BlogModel } from "../models/blogModel";
-import { authModel } from "../models/userModels";
+// import { authModel } from "../models/userModels";
 import { blogInterface } from "../interfaces/blog.interface";
 import CustomAPIError from "../helpers/custom-errors";
 import { StatusCodes } from "http-status-codes";
@@ -36,7 +36,9 @@ export const updateBlog = async (
 };
 
 export const getSingleBlog = async (blogID: string) => {
-  const blogExists = await BlogModel.findById(blogID);
+  const blogExists = await BlogModel.findById(blogID)
+    .populate("likes")
+    .populate("dislikes");
   if (!blogExists) {
     throw new CustomAPIError(
       `The blog with the ID ${blogID} does not exist`,
@@ -73,11 +75,10 @@ export const deleteBlog = async (blogId: string) => {
 };
 
 export const likeBlogService = async (blogId: string, userId: string) => {
-  
   // Find the blog which you want to be liked
   const blog = await BlogModel.findById(blogId);
-  // validateMongoDbID(blogId);
-  console.log("blog ID: ", blogId);
+  validateMongoDbID(blogId);
+  // console.log("blog ID: ", blogId);
 
   if (!blog) {
     throw new CustomAPIError(
@@ -123,6 +124,65 @@ export const likeBlogService = async (blogId: string, userId: string) => {
       {
         $push: { likes: userId },
         isLiked: true,
+      },
+      { new: true }
+    );
+  }
+
+  return updatedBlog;
+};
+
+export const dislikeBlogService = async (blogId: string, userId: string) => {
+  validateMongoDbID(blogId);
+
+  // Find the blog which you want to be disliked
+  const blog = await BlogModel.findById(blogId);
+
+  if (!blog) {
+    throw new CustomAPIError(
+      `The blog with ID ${blogId} does not exist`,
+      StatusCodes.NOT_FOUND
+    );
+  }
+
+  const isDisLiked = blog.isDisLiked;
+
+  // Check if the user has already liked the blog
+  const alreadyLiked = blog.likes.some(
+    (likedUserId) => likedUserId.toString() === userId
+  );
+
+  if (alreadyLiked) {
+    // Remove the user's like
+    await BlogModel.findByIdAndUpdate(
+      blogId,
+      {
+        $pull: { likes: userId },
+        isLiked: false,
+      },
+      { new: true }
+    );
+  }
+
+  let updatedBlog;
+
+  if (isDisLiked) {
+    // Remove the user's dislike
+    updatedBlog = await BlogModel.findByIdAndUpdate(
+      blogId,
+      {
+        $pull: { dislikes: userId },
+        isDisliked: false,
+      },
+      { new: true }
+    );
+  } else {
+    // Add the user's dislike
+    updatedBlog = await BlogModel.findByIdAndUpdate(
+      blogId,
+      {
+        $push: { dislikes: userId },
+        isDisliked: true,
       },
       { new: true }
     );

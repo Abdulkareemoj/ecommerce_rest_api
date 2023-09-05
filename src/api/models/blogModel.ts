@@ -31,13 +31,13 @@ const blogSchema = new Schema<blogInterface>(
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "UserModel",
+        ref: "Usermodel",
       },
     ],
     dislikes: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "UserModel",
+        ref: "Usermodel",
       },
     ],
     image: {

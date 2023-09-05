@@ -1,7 +1,7 @@
 import { productModel } from "../models/productsModels";
 import { StatusCodes } from "http-status-codes";
 import CustomAPIError from "../helpers/custom-errors";
-import { Types, Model } from "mongoose"; // Import necessary types from Mongoose
+import { Model } from "mongoose"; // Import necessary types from Mongoose
 import {
   ProductDataInterface,
   GetAllProductsOptions,
