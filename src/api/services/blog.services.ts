@@ -1,5 +1,5 @@
 import { BlogModel } from "../models/blogModel";
-import { authModel } from "../models/userModels";
+// import { authModel } from "../models/userModels";
 import { blogInterface } from "../interfaces/blog.interface";
 import CustomAPIError from "../helpers/custom-errors";
 import { StatusCodes } from "http-status-codes";
@@ -36,7 +36,9 @@ export const updateBlog = async (
 };
 
 export const getSingleBlog = async (blogID: string) => {
-  const blogExists = await BlogModel.findById(blogID);
+  const blogExists = await BlogModel.findById(blogID)
+    .populate("likes")
+    .populate("dislikes");
   if (!blogExists) {
     throw new CustomAPIError(
       `The blog with the ID ${blogID} does not exist`,
