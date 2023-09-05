@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { StatusCodes } from "http-status-codes";
-import slugify from "slugify";
+// import slugify from "slugify";
 import {
   createBlog,
   updateBlog,
