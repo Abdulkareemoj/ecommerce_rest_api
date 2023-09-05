@@ -42,6 +42,7 @@ import productRoute from "./api/routes/product.routes";
 import blogRoute from "./api/routes/blog.routes";
 import blogcategoryRoute from "./api/routes/blogCategory.routes";
 import productCategoryRoute from "./api/routes/productCategory.routes";
+import brandRoute from "./api/routes/brands.routes";
 
 dotenv.config();
 
@@ -85,6 +86,7 @@ app.use(
 app.use("/api/v1/mall/user", authRoute);
 app.use("/api/v1/mall/products", productRoute);
 app.use("/api/v1/mall/blogs", blogRoute);
+app.use("/api/v1/mall/brand", brandRoute);
 app.use("/api/v1/mall/blogscategory", blogcategoryRoute);
 app.use("/api/v1/mall/productscategory", productCategoryRoute);
 
