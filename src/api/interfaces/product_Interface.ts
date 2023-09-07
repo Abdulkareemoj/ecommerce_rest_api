@@ -3,7 +3,7 @@ import { SortByOptions } from "../types/sortOptions";
 
 // Defining the interface for the rating object
 interface Rating {
-  start: number;
+  star: number;
   postedBy: Types.ObjectId;
 }
 
@@ -20,6 +20,7 @@ export interface ProductDataInterface extends Document {
   images: string[];
   color: string;
   ratings: Rating[]; // Ratings array with the Rating interface
+  totalrating:  number;
   createdAt: Date;
   updatedAt: Date;
 }
