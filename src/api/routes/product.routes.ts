@@ -6,6 +6,8 @@ import {
   deleteProduct,
   get_all_products,
   getASingleProduct,
+  addToWishList,
+  rateProduct,
 } from "../controllers/productCtrls";
 
 const productRoute = express.Router();
@@ -17,5 +19,7 @@ productRoute.use(isAdmin);
 productRoute.post("/createproduct", create_product);
 productRoute.patch("/:id", updateSingleProduct);
 productRoute.delete("/:id", deleteProduct);
+productRoute.put("/wishlist", auth, addToWishList);
+productRoute.put("/rateproduct", auth, rateProduct);
 
 export default productRoute;
