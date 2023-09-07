@@ -9,12 +9,15 @@ import {
   getSingleProductService,
   updateProductService,
   deleteProductService,
+  addToWishListService,
+  rateProductService,
 } from "../services/product.services";
 import { productModel } from "../models/productsModels";
 import {
   GetAllProductsOptions,
   GetAllProductsQueryParams,
 } from "../interfaces/product_Interface";
+import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 
 // create a new product controller
 export const create_product = asyncHandler(
@@ -98,3 +101,49 @@ export const deleteProduct = asyncHandler(
   }
 );
 
+// add to wishlists controller
+export const addToWishList = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const userId = req?.user?.id;
+  if (!userId) {
+    res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: "User not authenticated" });
+    return;
+  }
+  const { prodId } = req.body;
+
+  try {
+    const updatedUser = await addToWishListService(userId, prodId);
+    res.status(StatusCodes.OK).json(updatedUser);
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+};
+
+export const rateProduct = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req?.user?.id;
+  if (userId) {
+    const { star, prodId, comment } = req.body;
+
+    try {
+      const finalProduct = await rateProductService(
+        userId,
+        prodId,
+        star,
+        comment
+      );
+      res.json(finalProduct);
+    } catch (error: any) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error.message);
+    }
+  } else {
+    res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: "User not authenticated" });
+  }
+};
