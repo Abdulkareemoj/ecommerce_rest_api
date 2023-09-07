@@ -1,4 +1,5 @@
 import { productModel } from "../models/productsModels";
+import { authModel } from "../models/userModels";
 import { StatusCodes } from "http-status-codes";
 import CustomAPIError from "../helpers/custom-errors";
 import { Model } from "mongoose"; // Import necessary types from Mongoose
@@ -31,15 +32,15 @@ export const getAllProductsService = async (
   const sortCriteria: any = {};
   sortCriteria[sortBy] = sortOrder === "asc" ? 1 : -1;
 
-   const query: any = {};
+  const query: any = {};
 
-   if (category) {
-     query.category = category;
-   }
+  if (category) {
+    query.category = category;
+  }
 
-   if (brand) {
-     query.brand = brand;
-   }
+  if (brand) {
+    query.brand = brand;
+  }
 
   const allProducts = await productModel
     .find()
@@ -98,4 +99,105 @@ export const deleteProductService = async (prodID: string) => {
       StatusCodes.BAD_REQUEST
     );
   return product;
+};
+
+// add to wishlist functionality
+export const addToWishListService = async (userID: string, prodID: string) => {
+  try {
+    const user = await authModel.findById(userID);
+    // console.log(user);
+    if (!user) {
+      // Handle the case where user is not found
+      throw new CustomAPIError("User not found", StatusCodes.NOT_FOUND);
+    }
+    const alreadyAdded = user.wishlists.find((id) => id.toString() === prodID);
+
+    if (alreadyAdded) {
+      return await authModel.findByIdAndUpdate(
+        userID,
+        {
+          $pull: { wishlists: prodID },
+        },
+        {
+          new: true,
+        }
+      );
+    } else {
+      return await authModel.findByIdAndUpdate(
+        userID,
+        {
+          $push: { wishlists: prodID },
+        },
+        {
+          new: true,
+        }
+      );
+    }
+  } catch (err) {
+    throw new CustomAPIError(
+      "Could not add product to wishlists",
+      StatusCodes.BAD_REQUEST
+    );
+  }
+};
+
+export const rateProductService = async (
+  userID: string,
+  prodID: string,
+  star: number,
+  comment: string
+) => {
+  try {
+    const product = await productModel.findById(prodID);
+    if (!product) {
+      throw new CustomAPIError(`Product not found`, StatusCodes.NOT_FOUND);
+    }
+    let alreadyRated = product.ratings.find(
+      (rating) => rating.postedBy.toString() === userID
+    );
+    if (alreadyRated) {
+      await productModel.updateOne(
+        {
+          "ratings.postedBy": userID,
+        },
+        {
+          $set: { "ratings.$.star": star, "ratings.$.comment": comment },
+        }
+      );
+    } else {
+      await productModel.findByIdAndUpdate(prodID, {
+        $push: {
+          ratings: {
+            star: star,
+            comment: comment,
+            postedBy: userID,
+          },
+        },
+      });
+    }
+    const getAllRatings = await productModel.findById(prodID);
+    if (!getAllRatings) {
+      throw new CustomAPIError(`Ratings not found`, StatusCodes.NOT_FOUND);
+    }
+    let totalRating = getAllRatings.ratings.length;
+    let ratingsum =
+      totalRating === 0
+        ? 0
+        : getAllRatings.ratings
+            .map((item) => item.star)
+            .reduce((prev, curr) => prev + curr, 0);
+    let actualRating =
+      totalRating === 0 ? 0 : Math.round(ratingsum / totalRating);
+
+    const finalproduct = await productModel.findByIdAndUpdate(
+      prodID,
+      {
+        totalrating: actualRating,
+      },
+      { new: true }
+    );
+    return finalproduct;
+  } catch (err: any) {
+    throw new Error(err.message);
+  }
 };
