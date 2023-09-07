@@ -49,6 +49,7 @@ const productSchema = new Schema<ProductDataInterface>({
   ratings: [
     {
       star: Number,
+      comment: String,
       postedBy: { type: Schema.Types.ObjectId, ref: "UserModel" },
     },
     { timestamps: true },
