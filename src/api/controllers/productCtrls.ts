@@ -9,12 +9,17 @@ import {
   getSingleProductService,
   updateProductService,
   deleteProductService,
+  addToWishListService,
+  rateProductService,
+  uploadImageService,
 } from "../services/product.services";
-import { productModel } from "../models/productsModels";
 import {
   GetAllProductsOptions,
   GetAllProductsQueryParams,
 } from "../interfaces/product_Interface";
+import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
+import { validateMongoDbID } from "../helpers/validateDbId";
+import { UploadedFile } from "express-fileupload";
 
 // create a new product controller
 export const create_product = asyncHandler(
@@ -35,19 +40,11 @@ export const create_product = asyncHandler(
 // get all products controller
 export const get_all_products = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    // Filtering products
-    const queryObject = { ...req.query };
-    const excludedFields = ["page", "sort", "limit", "fields"];
-    excludedFields.forEach((el) => delete queryObject[el]);
-    // console.log(`Query: ${queryObject}`);
-    let queryStr = JSON.stringify(queryObject);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
     const { sortBy, sortOrder, limit, page, category, brand } =
       req.query as GetAllProductsQueryParams;
 
-    const options: GetAllProductsOptions = {
-      sortBy: sortBy || "createdAt", // Default sorting by createdAt
+    const filterOpt: GetAllProductsOptions = {
+      sortBy: sortBy || "createdAt", // Default sort order
       sortOrder: sortOrder === "desc" ? "desc" : "asc",
       limit: limit ? parseInt(limit.toString(), 10) : 10,
       page: page ? parseInt(page.toString(), 10) : 1,
@@ -55,11 +52,8 @@ export const get_all_products = asyncHandler(
       brand: brand || "",
     };
 
-    let allProducts = await getAllProductsService(productModel, options);
-
-    res
-      .status(StatusCodes.OK)
-      .json({ numberOfProducts: allProducts.length, allProducts });
+    const paginatedProducts = await getAllProductsService(filterOpt);
+    res.status(StatusCodes.OK).json(paginatedProducts);
   }
 );
 
@@ -67,6 +61,7 @@ export const get_all_products = asyncHandler(
 export const getASingleProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
+    validateMongoDbID(id);
     //console.log(id);
     const productDataID = await getSingleProductService(id);
     res.status(StatusCodes.OK).json({ product: productDataID });
@@ -78,6 +73,7 @@ export const updateSingleProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     if (req.body.title) req.body.slug = slugify(req.body.title);
     const { id } = req.params;
+    validateMongoDbID(id);
     // console.log(id);
     const updateProduct = await updateProductService(id, req.body);
     res
@@ -90,6 +86,7 @@ export const updateSingleProduct = asyncHandler(
 export const deleteProduct = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
+    validateMongoDbID(id);
     const productDataID = await deleteProductService(id);
     res.status(StatusCodes.OK).json({
       status: "Deleted product Successfully",
@@ -98,3 +95,64 @@ export const deleteProduct = asyncHandler(
   }
 );
 
+// add to wishlists controller
+export const addToWishList = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const userId = req?.user?.id;
+  if (!userId) {
+    res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: "User not authenticated" });
+    return;
+  }
+  const { prodId } = req.body;
+
+  try {
+    const updatedUser = await addToWishListService(userId, prodId);
+    res.status(StatusCodes.OK).json(updatedUser);
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+};
+
+export const rateProduct = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req?.user?.id;
+  if (userId) {
+    const { star, prodId, comment } = req.body;
+
+    try {
+      const finalProduct = await rateProductService(
+        userId,
+        prodId,
+        star,
+        comment
+      );
+      res.json(finalProduct);
+    } catch (error: any) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(error.message);
+    }
+  } else {
+    res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: "User not authenticated" });
+  }
+};
+
+export const uploadImageCtrl = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    validateMongoDbID(id);
+    const files = req.files as Record<string, UploadedFile | UploadedFile[]>;
+
+    try {
+      const findProduct = await uploadImageService(id, files);
+      res.status(StatusCodes.OK).json(findProduct);
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+);

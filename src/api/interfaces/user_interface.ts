@@ -10,7 +10,7 @@ export interface UserDataInterface extends Document {
   isBlocked: boolean;
   cart: Types.ObjectId[];
   address: Types.ObjectId[];
-  whishlists: Types.ObjectId[];
+  wishlists: Types.ObjectId[];
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;

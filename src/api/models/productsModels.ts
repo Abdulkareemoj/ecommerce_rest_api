@@ -48,11 +48,16 @@ const productSchema = new Schema<ProductDataInterface>({
   },
   ratings: [
     {
-      start: Number,
+      star: Number,
+      comment: String,
       postedBy: { type: Schema.Types.ObjectId, ref: "UserModel" },
     },
     { timestamps: true },
   ],
+  totalrating: {
+    type: Number,
+    default: 0,
+  },
 });
 
 export const productModel = model<ProductDataInterface>(

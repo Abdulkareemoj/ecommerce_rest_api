@@ -51,7 +51,7 @@ const userSchema = new Schema<UserDataInterface>(
         ref: "Address",
       },
     ],
-    whishlists: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    wishlists: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     refreshToken: {
       type: String,
     },
@@ -102,10 +102,10 @@ userSchema.methods.createPasswordResetToken = function () {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  
+
   const expirationDate = new Date();
   expirationDate.setMinutes(expirationDate.getMinutes() + 10);
-  
+
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10min timeout  converting number to date
   console.log(resetToken, this.passwordResetToken);
   return resetToken;

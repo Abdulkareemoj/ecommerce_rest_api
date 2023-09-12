@@ -42,7 +42,7 @@ export const getallBlogs = asyncHandler(async (req: Request, res: Response) => {
   if (!allBlogs) {
     throw new CustomAPIError(
       "Cannot Get all blog Posts",
-      StatusCodes.NO_CONTENT
+      StatusCodes.NOT_FOUND
     );
   }
   res

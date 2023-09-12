@@ -17,7 +17,8 @@
     "moduleResolution": "Node",
     "lib": ["esnext"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "types": ["node", "express", "express-fileupload"]
   },
   "ts-node": {
     "complierOptions": {
