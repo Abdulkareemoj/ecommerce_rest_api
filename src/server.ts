@@ -43,6 +43,7 @@ import blogRoute from "./api/routes/blog.routes";
 import blogcategoryRoute from "./api/routes/blogCategory.routes";
 import productCategoryRoute from "./api/routes/productCategory.routes";
 import brandRoute from "./api/routes/brands.routes";
+import couponRoute from "./api/routes/coupon.routes";
 
 dotenv.config();
 
@@ -89,6 +90,7 @@ app.use("/api/v1/mall/blogs", blogRoute);
 app.use("/api/v1/mall/brand", brandRoute);
 app.use("/api/v1/mall/blogscategory", blogcategoryRoute);
 app.use("/api/v1/mall/productscategory", productCategoryRoute);
+app.use("/api/v1/mall/coupon", couponRoute);
 
 app.get("/", (req: Request, res: Response) => {
   req.session.isAuth = true;
