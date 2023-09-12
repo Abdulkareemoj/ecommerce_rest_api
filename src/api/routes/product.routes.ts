@@ -8,12 +8,23 @@ import {
   getASingleProduct,
   addToWishList,
   rateProduct,
+  uploadImageCtrl,
 } from "../controllers/productCtrls";
+
+import { uploadPhoto, productImageResize } from "../middlewares/uploadImages";
 
 const productRoute = express.Router();
 
 productRoute.get("/allproducts", get_all_products);
 productRoute.get("/:id", getASingleProduct);
+productRoute.put(
+  "/upload/:id",
+  auth,
+  isAdmin,
+  uploadPhoto.array("images", 10),
+  productImageResize,
+  uploadImageCtrl
+);
 productRoute.use(auth);
 productRoute.use(isAdmin);
 productRoute.post("/createproduct", create_product);
