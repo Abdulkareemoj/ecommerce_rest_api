@@ -2,11 +2,14 @@ import { productModel } from "../models/productsModels";
 import { authModel } from "../models/userModels";
 import { StatusCodes } from "http-status-codes";
 import CustomAPIError from "../helpers/custom-errors";
-import { Model } from "mongoose"; // Import necessary types from Mongoose
 import {
   ProductDataInterface,
   GetAllProductsOptions,
 } from "../interfaces/product_Interface"; // Import ProductDataInterface
+import { cloudinaryUpload } from "../config/cloudinaryconfig";
+import { UploadedFile } from "express-fileupload";
+import { FileWithNewPath } from "../interfaces/filePath";
+import { Paginated } from "../interfaces/paginatedInterface";
 
 //Create a Product Service
 export const createProductService = async (product: ProductDataInterface) => {
@@ -22,9 +25,8 @@ export const createProductService = async (product: ProductDataInterface) => {
 
 // Fetch All Products Services
 export const getAllProductsService = async (
-  productModel: Model<ProductDataInterface>,
   options: GetAllProductsOptions
-): Promise<ProductDataInterface[]> => {
+): Promise<Paginated<ProductDataInterface>> => {
   // Sorting, limiting and pagination of the Products
   const { sortBy, sortOrder, limit, page, category, brand } = options;
   const skip = (page - 1) * limit;
@@ -43,15 +45,23 @@ export const getAllProductsService = async (
   }
 
   const allProducts = await productModel
-    .find()
+    .find(query)
     .sort(sortCriteria)
     .skip(skip)
     .limit(limit)
     .exec();
+  
   if (allProducts.length <= 0) {
     throw new CustomAPIError("No products found", StatusCodes.NO_CONTENT);
   }
-  return allProducts;
+  const productsCount: number = await productModel.find(query).count();
+
+  return {
+    page: allProducts,
+    currentPage: page,
+    totalPages: Math.ceil(productsCount / limit),
+    total: productsCount,
+  };
 };
 // Get a single product by its ID Service
 export const getSingleProductService = async (productID: string) => {
@@ -199,5 +209,43 @@ export const rateProductService = async (
     return finalproduct;
   } catch (err: any) {
     throw new Error(err.message);
+  }
+};
+
+
+
+export const uploadImageService = async (
+  id: string,
+  files: Record<string, UploadedFile | UploadedFile[] >
+): Promise<any> => {
+  try {
+    const uploader = async (path: string): Promise<FileWithNewPath> => {
+      const result = await cloudinaryUpload(path);
+      return { path, url: result.url };
+    }
+    const urls: string[] = [];
+
+    const fileArray = Array.isArray(files) ? files : [files];
+
+    for (const file of fileArray) {
+      const { path } = file;
+      const newPath = await uploader(path);
+      urls.push(newPath.url);
+    }
+    const findproduct = await productModel.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      {
+        new: true,
+      }
+    );
+    return findproduct;
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(error.message);
   }
 };
