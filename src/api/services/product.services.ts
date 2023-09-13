@@ -10,6 +10,7 @@ import { cloudinaryUpload } from "../config/cloudinaryconfig";
 import { UploadedFile } from "express-fileupload";
 import { FileWithNewPath } from "../interfaces/filePath";
 import { Paginated } from "../interfaces/paginatedInterface";
+import fs from "fs";
 
 //Create a Product Service
 export const createProductService = async (product: ProductDataInterface) => {
@@ -227,11 +228,15 @@ export const uploadImageService = async (
 
     const fileArray = Array.isArray(files) ? files : [files];
 
-    for (const file of fileArray) {
-      const { path } = file;
-      const newPath = await uploader(path);
-      urls.push(newPath.url);
-    }
+   for (const file of fileArray) {
+     if (file && file.path) {
+       // Check if file and path are defined
+       const { path } = file;
+       const newPath = await uploader(path);
+       urls.push(newPath.url);
+       fs.unlinkSync(path);
+     }
+   }
     const findproduct = await productModel.findByIdAndUpdate(
       id,
       {

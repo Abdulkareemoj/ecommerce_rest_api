@@ -10,9 +10,12 @@ import {
   deleteBlog,
   likeBlogService,
   dislikeBlogService,
+  uploadBlogImageService,
 } from "../services/blog.services";
 import CustomAPIError from "../helpers/custom-errors";
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
+import { validateMongoDbID } from "../helpers/validateDbId";
+import { UploadedFile } from "express-fileupload";
 
 export const create_new_blog = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -121,3 +124,18 @@ export const dislikeBlogController = async (
     });
   }
 };
+
+export const uploadBlogImageCtrl = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    validateMongoDbID(id);
+    const files = req.files as Record<string, UploadedFile | UploadedFile[]>;
+
+    try {
+      const findBlog = await uploadBlogImageService(id, files);
+      res.status(StatusCodes.OK).json(findBlog);
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+);
