@@ -4,6 +4,10 @@ import { blogInterface } from "../interfaces/blog.interface";
 import CustomAPIError from "../helpers/custom-errors";
 import { StatusCodes } from "http-status-codes";
 import { validateMongoDbID } from "../helpers/validateDbId";
+import { cloudinaryUpload } from "../config/cloudinaryconfig";
+import { UploadedFile } from "express-fileupload";
+import { FileWithNewPath } from "../interfaces/filePath";
+import fs from "fs";
 
 export const createBlog = async (blogPost: blogInterface) => {
   const newBlog = await BlogModel.create({ ...blogPost });
@@ -189,4 +193,41 @@ export const dislikeBlogService = async (blogId: string, userId: string) => {
   }
 
   return updatedBlog;
+};
+
+export const uploadBlogImageService = async (
+  id: string,
+  files: Record<string, UploadedFile | UploadedFile[]>
+): Promise<any> => {
+  try {
+    const uploader = async (path: string): Promise<FileWithNewPath> => {
+      const result = await cloudinaryUpload(path);
+      return { path, url: result.url };
+    };
+    const urls: string[] = [];
+
+    const fileArray = Array.isArray(files) ? files : [files];
+
+    for (const file of fileArray) {
+      const { path } = file;
+      const newPath = await uploader(path);
+      urls.push(newPath.url);
+      fs.unlinkSync(path);
+    }
+    const findproduct = await BlogModel.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      {
+        new: true,
+      }
+    );
+    return findproduct;
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(error.message);
+  }
 };

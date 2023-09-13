@@ -7,6 +7,6 @@ export interface blogInterface {
   isDisLiked: boolean;
   likes: string[];
   dislikes: string[];
-  image: string;
+  image: string[] | string;
   author: string;
 }
