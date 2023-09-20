@@ -6,18 +6,14 @@ import { validateMongoDbID } from "../helpers/validateDbId";
 import { StatusCodes } from "http-status-codes";
 import { generateToken } from "../helpers/jsonWebToken";
 import { generateRefreshToken } from "../helpers/refreshToken";
-import { Request } from "express";
 import { UserDataInterface } from "../interfaces/user_interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
 import dotenv from "dotenv";
 import crypto from "crypto";
+import { IDecoded } from "../interfaces/authenticateRequest";
 
 dotenv.config();
-
-interface IDecoded {
-  id: string;
-}
 
 // User signup Services
 export const create_user_service = async (userData: UserDataInterface) => {
@@ -72,6 +68,57 @@ export const login_user_service = async (
       { new: true }
     );
     return { userExists, token, updateLoggedUser };
+  }
+};
+
+// Login Admin Service
+export const login_admin_service = async (
+  AdminData: Partial<UserDataInterface>
+) => {
+  const { email, password } = AdminData; // Extract Email and Password from userData
+
+  // checking if both fields are omitted
+  if (!email || !password) {
+    throw new CustomAPIError(
+      `Email and Password are required for login.`,
+      StatusCodes.BAD_REQUEST
+    );
+  }
+  const AdminExists = await authModel.findOne({ email: email });
+
+  if (!AdminExists) {
+    throw new UnauthenticatedError(
+      "Password or email didn't match any on our database",
+      StatusCodes.NOT_FOUND
+    );
+  }
+
+  // checking fot the role of the Admin
+  if (AdminExists.role !== "admin")
+    throw new CustomAPIError(
+      `The User is not an administrator`,
+      StatusCodes.BAD_REQUEST
+    );
+
+  // comparing the password of the user.
+  const isMatch = await AdminExists.comparePwd(password);
+  if (!isMatch) {
+    throw new UnauthenticatedError(
+      "Password or email didn't match any on our database",
+      StatusCodes.NOT_FOUND
+    );
+  } else {
+    //const token = userExists.createJWT();
+    const token: string = generateToken(AdminExists._id);
+    const refreshToken = generateRefreshToken(AdminExists._id);
+    const updateLoggedUser = await authModel.findByIdAndUpdate(
+      AdminExists._id,
+      {
+        refreshToken: refreshToken,
+      },
+      { new: true }
+    );
+    return { AdminExists, token, updateLoggedUser };
   }
 };
 
@@ -321,4 +368,80 @@ export const resetPwdService = async (
   await user.save();
 
   return user;
+};
+
+// add to wishlist functionality
+export const addToWishListService = async (userID: string, prodID: string) => {
+  try {
+    const user = await authModel.findById(userID);
+    // console.log(user);
+    if (!user) {
+      // Handle the case where user is not found
+      throw new CustomAPIError("User not found", StatusCodes.NOT_FOUND);
+    }
+    const alreadyAdded = user.wishlists.find((id) => id.toString() === prodID);
+
+    if (alreadyAdded) {
+      return await authModel.findByIdAndUpdate(
+        userID,
+        {
+          $pull: { wishlists: prodID },
+        },
+        {
+          new: true,
+        }
+      );
+    } else {
+      return await authModel.findByIdAndUpdate(
+        userID,
+        {
+          $push: { wishlists: prodID },
+        },
+        {
+          new: true,
+        }
+      );
+    }
+  } catch (err) {
+    throw new CustomAPIError(
+      "Could not add product to wishlists",
+      StatusCodes.BAD_REQUEST
+    );
+  }
+};
+
+export const getWishListService = async (
+  userId: string | undefined
+): Promise<UserDataInterface> => {
+  const finduser = await authModel.findById(userId).populate("wishlists");
+  console.log("find User Data: finduser");
+  try {
+    if (!finduser) {
+      throw new CustomAPIError(
+        `The User with the ID: ${userId} does not exist`,
+        StatusCodes.NOT_FOUND
+      );
+    }
+    console.log("find User Data:", finduser);
+    return finduser;
+  } catch (error) {
+    throw new Error("Could not retrieve wishlist");
+  }
+};
+
+export const saveAddress_service = async (
+  userID: string | undefined,
+  address: string
+) => {
+  try {
+    const updateUser = await authModel.findByIdAndUpdate(
+      userID,
+      { address },
+      { new: true }
+    );
+    console.log("user data: ", updateUser);
+    return updateUser;
+  } catch (error) {
+    throw new Error("Could not save address");
+  }
 };

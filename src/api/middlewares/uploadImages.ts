@@ -2,6 +2,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import { Request, Response, NextFunction } from "express";
+import fs from "fs";
 
 // Setting up the multer Storage
 const multerStorage = multer.diskStorage({
@@ -53,6 +54,7 @@ export const productImageResize = async (
         .toFile(
           path.join(__dirname, `../public/images/products/${file.filename}`)
         );
+      fs.unlinkSync(`../public/images/products/${file.filename}`);
     })
   );
 
@@ -65,7 +67,7 @@ export const blogImageResize = async (
   next: NextFunction
 ) => {
   // Use type assertion to convert req.files to Express.Multer.File[]
-   const files = req.files as unknown as Express.Multer.File[];
+  const files = req.files as unknown as Express.Multer.File[];
 
   if (!files) return next();
 
@@ -78,6 +80,7 @@ export const blogImageResize = async (
         .toFile(
           path.join(__dirname, `../public/images/blogs/${file.filename}`)
         );
+      fs.unlinkSync(`../public/images/blogs/${file.filename}`);
     })
   );
 

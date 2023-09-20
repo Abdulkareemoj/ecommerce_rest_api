@@ -51,7 +51,7 @@ export const getAllProductsService = async (
     .skip(skip)
     .limit(limit)
     .exec();
-  
+
   if (allProducts.length <= 0) {
     throw new CustomAPIError("No products found", StatusCodes.NO_CONTENT);
   }
@@ -110,46 +110,6 @@ export const deleteProductService = async (prodID: string) => {
       StatusCodes.BAD_REQUEST
     );
   return product;
-};
-
-// add to wishlist functionality
-export const addToWishListService = async (userID: string, prodID: string) => {
-  try {
-    const user = await authModel.findById(userID);
-    // console.log(user);
-    if (!user) {
-      // Handle the case where user is not found
-      throw new CustomAPIError("User not found", StatusCodes.NOT_FOUND);
-    }
-    const alreadyAdded = user.wishlists.find((id) => id.toString() === prodID);
-
-    if (alreadyAdded) {
-      return await authModel.findByIdAndUpdate(
-        userID,
-        {
-          $pull: { wishlists: prodID },
-        },
-        {
-          new: true,
-        }
-      );
-    } else {
-      return await authModel.findByIdAndUpdate(
-        userID,
-        {
-          $push: { wishlists: prodID },
-        },
-        {
-          new: true,
-        }
-      );
-    }
-  } catch (err) {
-    throw new CustomAPIError(
-      "Could not add product to wishlists",
-      StatusCodes.BAD_REQUEST
-    );
-  }
 };
 
 export const rateProductService = async (
@@ -213,30 +173,28 @@ export const rateProductService = async (
   }
 };
 
-
-
 export const uploadImageService = async (
   id: string,
-  files: Record<string, UploadedFile | UploadedFile[] >
+  files: Record<string, UploadedFile | UploadedFile[]>
 ): Promise<any> => {
   try {
     const uploader = async (path: string): Promise<FileWithNewPath> => {
       const result = await cloudinaryUpload(path);
       return { path, url: result.url };
-    }
+    };
     const urls: string[] = [];
 
     const fileArray = Array.isArray(files) ? files : [files];
 
-   for (const file of fileArray) {
-     if (file && file.path) {
-       // Check if file and path are defined
-       const { path } = file;
-       const newPath = await uploader(path);
-       urls.push(newPath.url);
-       fs.unlinkSync(path);
-     }
-   }
+    for (const file of fileArray) {
+      if (file && file.path) {
+        // Check if file and path are defined
+        const { path } = file;
+        const newPath = await uploader(path);
+        urls.push(newPath.url);
+        fs.unlinkSync(path);
+      }
+    }
     const findproduct = await productModel.findByIdAndUpdate(
       id,
       {

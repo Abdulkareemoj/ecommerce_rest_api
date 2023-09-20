@@ -48,10 +48,10 @@ const userSchema = new Schema<UserDataInterface>(
     address: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Address",
+        ref: "address",
       },
     ],
-    wishlists: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    wishlists: [{ type: Schema.Types.ObjectId, ref: "ProductModel" }],
     refreshToken: {
       type: String,
     },
