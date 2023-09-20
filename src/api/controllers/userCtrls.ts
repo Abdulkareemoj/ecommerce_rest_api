@@ -15,9 +15,14 @@ import {
   LogoutService,
   fgtPwdService,
   resetPwdService,
+  login_admin_service,
+  addToWishListService,
+  getWishListService,
+  saveAddress_service,
 } from "../services/user.services";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
+import CustomAPIError from "../helpers/custom-errors";
 
 // User Signup controller
 export const create_a_user = asyncHandler(
@@ -48,6 +53,37 @@ export const LoginUser = asyncHandler(
       });
     }
     const refreshToken = generateRefreshToken(userExists._id);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
+    });
+    res.status(StatusCodes.OK).json({
+      userData: { userEmail: email },
+      Token: token,
+      refToken: updateLoggedUser?.refreshToken,
+    });
+  }
+);
+
+// Admin Login Controller
+export const LoginAdmin = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { email, password } = req.body;
+
+    // Pass email and password separately to login_user_service
+    const { AdminExists, token, updateLoggedUser } = await login_admin_service({
+      email,
+      password,
+    });
+
+    // checking if the user with the email exists or not.
+    if (!AdminExists) {
+      res.status(StatusCodes.UNAUTHORIZED).json({
+        errMessage: `The user with the email: ${email} is not registered`,
+      });
+    }
+    const refreshToken = generateRefreshToken(AdminExists._id);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -194,3 +230,62 @@ export const passwordReset = asyncHandler(
     }
   }
 );
+
+// add to wishlists controller
+export const addToWishList = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const userId = req?.user?.id;
+  if (!userId) {
+    res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: "User not authenticated" });
+    return;
+  }
+  const { prodId } = req.body;
+
+  try {
+    const updatedUser = await addToWishListService(userId, prodId);
+    res.status(StatusCodes.OK).json(updatedUser);
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal Server Error" });
+  }
+};
+
+export const getWishList = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const id = req?.user?.id;
+  console.log("User ID:", id);
+  try {
+    if (!id) {
+      res.status(StatusCodes.NOT_FOUND).json({ error: `ID: ${id} Not found` });
+    }
+    const findUser = await getWishListService(id);
+    res.status(StatusCodes.OK).json({ userData: findUser });
+  } catch (error: any) {
+    throw new CustomAPIError(
+      `Server Error: ${error.message}`,
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
+export const saveAddress = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const id = req?.user?.id;
+  const updatedUser = await saveAddress_service(id, req?.body?.address);
+  if (!updatedUser) {
+    res.status(404).json({ error: `User with ID ${id} not found` });
+    return;
+  }
+  res.status(StatusCodes.OK).json({ userData: updatedUser });
+
+  res.json(updatedUser);
+};

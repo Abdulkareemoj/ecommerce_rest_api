@@ -9,7 +9,6 @@ import {
   getSingleProductService,
   updateProductService,
   deleteProductService,
-  addToWishListService,
   rateProductService,
   uploadImageService,
 } from "../services/product.services";
@@ -94,30 +93,6 @@ export const deleteProduct = asyncHandler(
     });
   }
 );
-
-// add to wishlists controller
-export const addToWishList = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
-  const userId = req?.user?.id;
-  if (!userId) {
-    res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ error: "User not authenticated" });
-    return;
-  }
-  const { prodId } = req.body;
-
-  try {
-    const updatedUser = await addToWishListService(userId, prodId);
-    res.status(StatusCodes.OK).json(updatedUser);
-  } catch (error) {
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Internal Server Error" });
-  }
-};
 
 export const rateProduct = async (req: AuthenticatedRequest, res: Response) => {
   const userId = req?.user?.id;
