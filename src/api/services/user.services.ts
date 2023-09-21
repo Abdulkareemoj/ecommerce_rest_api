@@ -446,7 +446,7 @@ export const saveAddress_service = async (
     console.log("user data: ", updateUser);
     return updateUser;
   } catch (error) {
-    console.error("Error while updating user:", error);
+    // console.error("Error while updating user:", error);
     throw new Error("Could not save address");
   }
 };

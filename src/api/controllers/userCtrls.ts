@@ -288,7 +288,7 @@ export const saveAddress = async (
     }
     res.status(StatusCodes.OK).json({ userData: updatedUser });
   } catch (error) {
-    console.error("Error in saveAddress:", error);
+    // console.error("Error in saveAddress:", error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Could not save address" });
