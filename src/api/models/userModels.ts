@@ -47,7 +47,7 @@ const userSchema = new Schema<UserDataInterface>(
     },
     address: [
       {
-        type: Schema.Types.ObjectId,
+        type: String,
         ref: "address",
       },
     ],
