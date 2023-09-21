@@ -430,18 +430,23 @@ export const getWishListService = async (
 };
 
 export const saveAddress_service = async (
-  userID: string | undefined,
+  userID: string ,
   address: string
 ) => {
+  validateMongoDbID(userID);
   try {
     const updateUser = await authModel.findByIdAndUpdate(
       userID,
       { address },
       { new: true }
     );
+    if (!updateUser) {
+      throw new Error(`User with ID ${userID} not found`);
+    }
     console.log("user data: ", updateUser);
     return updateUser;
   } catch (error) {
+    // console.error("Error while updating user:", error);
     throw new Error("Could not save address");
   }
 };

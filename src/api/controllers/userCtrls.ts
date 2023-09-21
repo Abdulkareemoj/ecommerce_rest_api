@@ -279,13 +279,18 @@ export const saveAddress = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
-  const id = req?.user?.id;
-  const updatedUser = await saveAddress_service(id, req?.body?.address);
-  if (!updatedUser) {
-    res.status(404).json({ error: `User with ID ${id} not found` });
-    return;
+  const id: string = req?.user?.id ?? "";
+  try {
+    const updatedUser = await saveAddress_service(id, req?.body?.address);
+    if (!updatedUser) {
+      res.status(404).json({ error: `User with ID ${id} not found` });
+      return;
+    }
+    res.status(StatusCodes.OK).json({ userData: updatedUser });
+  } catch (error) {
+    // console.error("Error in saveAddress:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Could not save address" });
   }
-  res.status(StatusCodes.OK).json({ userData: updatedUser });
-
-  res.json(updatedUser);
 };
