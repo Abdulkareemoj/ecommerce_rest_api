@@ -1,4 +1,6 @@
 import { authModel } from "../models/userModels";
+import { UserOrderModel } from "../models/orderModel";
+import { UserCartModel } from "../models/cartModel";
 import { mailer } from "../config/nodeMailer";
 import CustomAPIError from "../helpers/custom-errors";
 import UnauthenticatedError from "../helpers/unauthenticated";
@@ -9,10 +11,10 @@ import { generateRefreshToken } from "../helpers/refreshToken";
 import { UserDataInterface } from "../interfaces/user_interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
-import dotenv from "dotenv";
 import crypto from "crypto";
 import { IDecoded } from "../interfaces/authenticateRequest";
 
+import dotenv from "dotenv";
 dotenv.config();
 
 // User signup Services
@@ -429,10 +431,7 @@ export const getWishListService = async (
   }
 };
 
-export const saveAddress_service = async (
-  userID: string ,
-  address: string
-) => {
+export const saveAddress_service = async (userID: string, address: string) => {
   validateMongoDbID(userID);
   try {
     const updateUser = await authModel.findByIdAndUpdate(
