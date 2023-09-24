@@ -19,7 +19,9 @@ import {
   addToWishListService,
   getWishListService,
   saveAddress_service,
+  userCartService,
 } from "../services/user.services";
+import { Types } from "mongoose";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 import CustomAPIError from "../helpers/custom-errors";
@@ -292,5 +294,35 @@ export const saveAddress = async (
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ error: "Could not save address" });
+  }
+};
+
+export const userCartCtrl = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { cart } = req.body;
+    const id = req?.user?.id;
+
+    // Validate the user's MongoDB ID
+
+    if (!id) {
+      res.status(400).json({ error: "Invalid user ID" });
+      return;
+    }
+
+    const updatedCart = await userCartService(id, cart);
+
+    if (!updatedCart) {
+      res.status(500).json({ error: "Could not update user cart" });
+      return;
+    }
+
+    res.json(updatedCart);
+  } catch (error) {
+    res
+      .status(StatusCodes.NOT_ACCEPTABLE)
+      .json({ error: `Couldn't add Item to cart.` });
   }
 };
