@@ -42,3 +42,7 @@ export interface GetAllProductsQueryParams {
   category?: string;
   brand?: string;
 }
+
+export interface ProductInterface extends ProductDataInterface {
+  count: number;
+}
