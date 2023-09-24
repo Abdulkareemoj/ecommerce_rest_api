@@ -1,5 +1,6 @@
 import { authModel } from "../models/userModels";
 import { UserOrderModel } from "../models/orderModel";
+import { productModel } from "../models/productsModels";
 import { UserCartModel } from "../models/cartModel";
 import { mailer } from "../config/nodeMailer";
 import CustomAPIError from "../helpers/custom-errors";
@@ -13,8 +14,13 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
 import crypto from "crypto";
 import { IDecoded } from "../interfaces/authenticateRequest";
+import { CartItem } from "../interfaces/cartModel_Interface";
+import { CartModelInterface } from "../interfaces/cartModel_Interface";
+import { ProductDataInterface } from "../interfaces/product_Interface";
+import { Types } from "mongoose";
 
 import dotenv from "dotenv";
+
 dotenv.config();
 
 // User signup Services
@@ -448,4 +454,112 @@ export const saveAddress_service = async (userID: string, address: string) => {
     // console.error("Error while updating user:", error);
     throw new Error("Could not save address");
   }
+};
+
+
+/* export const userCartService = async (
+  userId: string,
+  cart: CartItem[]
+): Promise<CartModelInterface | null | void> => {
+  try {
+    let OrderedProducts: CartItem[] = [];
+
+
+    // check if the user already has a cart and remove it
+    const alreadyHasCart = await UserCartModel.findOne({ orderby: userId });
+    if (alreadyHasCart) {
+      console.log("Already has a cart: ", alreadyHasCart);
+      alreadyHasCart.remove();
+    }
+
+    // iterate through the cart items.
+    for (let i = 0; i < cart.length; i++) {
+      const { id, count, color } = cart[i];
+
+      // Fetch the product details using the id.
+      const getProduct = await productModel.findById(id).select("price");
+      console.log("getProduct:", getProduct);
+      if (!getProduct) {
+        console.error(`Product with ID ${id} not found.`);
+        continue;
+      } else {
+        OrderedProducts.push({
+          id: id,
+          count,
+          color,
+          price: getProduct.price,
+        });
+      }
+    }
+    let cartTotal: number = 0;
+
+    // calculating the cart total;
+    for (let i = 0; i < OrderedProducts.length; i++) {
+      cartTotal += OrderedProducts[i].price * OrderedProducts[i].count;
+    }
+    console.log("OrderedProducts:", OrderedProducts);
+
+    const newCart = await new UserCartModel({
+      products: OrderedProducts.map((product) => ({
+        product: product.id,
+        count: product.count,
+        color: product.color,
+        price: product.price,
+      })),
+      cartTotal,
+      orderby: userId,
+    }).save();
+
+    // console.log("New cart: ", newCart);
+
+    return newCart;
+  } catch (error) {
+    throw new Error("Could not add Product to cart");
+  }
+}; */
+
+export const userCartService = async (userId: string, cart: CartItem[]) => {
+  let products = [];
+
+  const user = await authModel.findById(userId);
+
+  // checking if the user already has a cart.
+  const userAlreadyHascart = await UserCartModel.findOne({
+    orderby: user?._id,
+  });
+  if (userAlreadyHascart) {
+    userAlreadyHascart.remove();
+  }
+
+  for (let i = 0; i < cart.length; i++) {
+    let cartItem: CartItem = {
+      id: cart[i].id,
+      count: cart[i].count,
+      color: cart[i].color,
+      price: 0,
+    };
+
+    
+    const getPrice = await productModel
+      .findById(cart[i].id)
+      .select("price")
+      .exec();
+    if (getPrice) {
+      cartItem.price = getPrice.price;
+    }
+
+    products.push(cartItem);
+  }
+
+  let cartTotal = 0;
+  for (let i = 0; i < products.length; i++) {
+    cartTotal = cartTotal + products[i].price * products[i].count;
+  }
+
+  const newCart = await new UserCartModel({
+    products,
+    cartTotal,
+    orderby: user?._id,
+  }).save();
+  return newCart;
 };
