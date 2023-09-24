@@ -48,7 +48,7 @@ const userSchema = new Schema<UserDataInterface>(
     address: [
       {
         type: String,
-        ref: "address",
+        ref: "Address",
       },
     ],
     wishlists: [{ type: Schema.Types.ObjectId, ref: "ProductModel" }],
