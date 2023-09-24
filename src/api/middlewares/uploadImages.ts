@@ -54,7 +54,9 @@ export const productImageResize = async (
         .toFile(
           path.join(__dirname, `../public/images/products/${file.filename}`)
         );
-      fs.unlinkSync(`../public/images/products/${file.filename}`);
+      fs.unlinkSync(
+        path.join(__dirname, `../public/images/products/${file.filename}`)
+      );
     })
   );
 
@@ -80,7 +82,9 @@ export const blogImageResize = async (
         .toFile(
           path.join(__dirname, `../public/images/blogs/${file.filename}`)
         );
-      fs.unlinkSync(`../public/images/blogs/${file.filename}`);
+      fs.unlinkSync(
+        path.join(__dirname, `../public/images/blogs/${file.filename}`)
+      );
     })
   );
 
