@@ -308,7 +308,9 @@ export const userCartCtrl = async (
     // Validate the user's MongoDB ID
 
     if (!id) {
-      res.status(400).json({ error: "Invalid user ID" });
+      res
+        .status(400)
+        .json({ error: `The User-ID: ${id} is invalid or doesn't exist` });
       return;
     }
 
@@ -323,6 +325,8 @@ export const userCartCtrl = async (
   } catch (error) {
     res
       .status(StatusCodes.NOT_ACCEPTABLE)
-      .json({ error: `Couldn't add Item to cart.` });
+      .json({
+        error: `Couldn't add Item to cart cause Item is already on the cart.`,
+      });
   }
 };
