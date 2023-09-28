@@ -456,68 +456,6 @@ export const saveAddress_service = async (userID: string, address: string) => {
   }
 };
 
-
-/* export const userCartService = async (
-  userId: string,
-  cart: CartItem[]
-): Promise<CartModelInterface | null | void> => {
-  try {
-    let OrderedProducts: CartItem[] = [];
-
-
-    // check if the user already has a cart and remove it
-    const alreadyHasCart = await UserCartModel.findOne({ orderby: userId });
-    if (alreadyHasCart) {
-      console.log("Already has a cart: ", alreadyHasCart);
-      alreadyHasCart.remove();
-    }
-
-    // iterate through the cart items.
-    for (let i = 0; i < cart.length; i++) {
-      const { id, count, color } = cart[i];
-
-      // Fetch the product details using the id.
-      const getProduct = await productModel.findById(id).select("price");
-      console.log("getProduct:", getProduct);
-      if (!getProduct) {
-        console.error(`Product with ID ${id} not found.`);
-        continue;
-      } else {
-        OrderedProducts.push({
-          id: id,
-          count,
-          color,
-          price: getProduct.price,
-        });
-      }
-    }
-    let cartTotal: number = 0;
-
-    // calculating the cart total;
-    for (let i = 0; i < OrderedProducts.length; i++) {
-      cartTotal += OrderedProducts[i].price * OrderedProducts[i].count;
-    }
-    console.log("OrderedProducts:", OrderedProducts);
-
-    const newCart = await new UserCartModel({
-      products: OrderedProducts.map((product) => ({
-        product: product.id,
-        count: product.count,
-        color: product.color,
-        price: product.price,
-      })),
-      cartTotal,
-      orderby: userId,
-    }).save();
-
-    // console.log("New cart: ", newCart);
-
-    return newCart;
-  } catch (error) {
-    throw new Error("Could not add Product to cart");
-  }
-}; */
-
 export const userCartService = async (userId: string, cart: CartItem[]) => {
   let products = [];
 
@@ -539,7 +477,6 @@ export const userCartService = async (userId: string, cart: CartItem[]) => {
       price: 0,
     };
 
-    
     const getPrice = await productModel
       .findById(cart[i].id)
       .select("price")
@@ -562,4 +499,23 @@ export const userCartService = async (userId: string, cart: CartItem[]) => {
     orderby: user?._id,
   }).save();
   return newCart;
+};
+
+export const getUserCartService = async (
+  userId: string
+): Promise<CartModelInterface | null> => {
+  validateMongoDbID(userId);
+  try {
+    const cart = await UserCartModel.findOne({ orderby: userId }).populate(
+      "products.product"
+    );
+    console.log(userId);
+    console.log(cart);
+    return cart;
+  } catch (error) {
+    throw new CustomAPIError(
+      "Could not retrieve user's cart",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
 };

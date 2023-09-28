@@ -20,11 +20,13 @@ import {
   getWishListService,
   saveAddress_service,
   userCartService,
+  getUserCartService,
 } from "../services/user.services";
 import { Types } from "mongoose";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 import CustomAPIError from "../helpers/custom-errors";
+import { validateMongoDbID } from "../helpers/validateDbId";
 
 // User Signup controller
 export const create_a_user = asyncHandler(
@@ -323,10 +325,29 @@ export const userCartCtrl = async (
 
     res.json(updatedCart);
   } catch (error) {
-    res
-      .status(StatusCodes.NOT_ACCEPTABLE)
-      .json({
-        error: `Couldn't add Item to cart cause Item is already on the cart.`,
-      });
+    res.status(StatusCodes.NOT_ACCEPTABLE).json({
+      error: `Couldn't add Item to cart cause Item is already on the cart.`,
+    });
+  }
+};
+
+export const getUserCartController = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const id = req?.user?.id;
+  if (!id) throw new CustomAPIError("Invalid user ID", 400);
+  console.log("ID data: ", id);
+
+  try {
+    const cart = await getUserCartService(id);
+
+    if (!cart) {
+      throw new CustomAPIError("Cart not found", 404);
+    }
+
+    res.status(StatusCodes.OK).json({ cartData: cart });
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ error: error.message });
   }
 };
