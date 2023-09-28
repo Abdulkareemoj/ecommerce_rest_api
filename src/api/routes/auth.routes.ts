@@ -17,6 +17,7 @@ import {
   getWishList,
   saveAddress,
   userCartCtrl,
+  getUserCartController,
 } from "../controllers/userCtrls";
 import { auth, isAdmin } from "../middlewares/authMiddleware";
 
@@ -38,6 +39,7 @@ authRoute.patch("/unblock-user/:id", auth, isAdmin, UnBlockUserCtrl);
 authRoute.put("/wishlist", auth, addToWishList);
 authRoute.get("/wishlist/:id", auth, getWishList);
 authRoute.put("/save-address", auth, saveAddress);
+authRoute.get("/user-cart", auth, getUserCartController);
 authRoute.post("/cart", auth, userCartCtrl);
 
 export default authRoute;
