@@ -18,6 +18,8 @@ import {
   saveAddress,
   userCartCtrl,
   getUserCartController,
+  emptyCartCtrl,
+  applyCouponCtrl,
 } from "../controllers/userCtrls";
 import { auth, isAdmin } from "../middlewares/authMiddleware";
 
@@ -29,6 +31,9 @@ authRoute.post("/admin-login", LoginAdmin);
 authRoute.get("/allusers", getAllUser);
 authRoute.get("/refresh-token", handleRefreshToken);
 authRoute.get("/logout", logoutUserCtrl);
+authRoute.get("/user-cart", auth, getUserCartController);
+authRoute.post("/cart/applycoupon", auth, applyCouponCtrl);
+authRoute.delete("/empty-cart", auth, emptyCartCtrl);
 authRoute.get("/:id", getUser);
 authRoute.delete("/:id", deleteUser);
 authRoute.post("/forgotpassword", forgotPassword);
@@ -39,7 +44,6 @@ authRoute.patch("/unblock-user/:id", auth, isAdmin, UnBlockUserCtrl);
 authRoute.put("/wishlist", auth, addToWishList);
 authRoute.get("/wishlist/:id", auth, getWishList);
 authRoute.put("/save-address", auth, saveAddress);
-authRoute.get("/user-cart", auth, getUserCartController);
 authRoute.post("/cart", auth, userCartCtrl);
 
 export default authRoute;
