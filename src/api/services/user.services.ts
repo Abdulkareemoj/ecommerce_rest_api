@@ -18,7 +18,9 @@ import { IDecoded } from "../interfaces/authenticateRequest";
 import { CartItem } from "../interfaces/cartModel_Interface";
 import { CartModelInterface } from "../interfaces/cartModel_Interface";
 import { ProductDataInterface } from "../interfaces/product_Interface";
+import { CreateOrderParams } from "../interfaces/create_order";
 import { Types } from "mongoose";
+import uniqid from "uniqid";
 
 import dotenv from "dotenv";
 
@@ -583,4 +585,62 @@ export const applyCouponService = async (
   );
 
   return parseFloat(totalAfterDiscount);
+};
+
+export const CreateOrderService = async ({
+  userId,
+  COD,
+  couponApplied,
+}: CreateOrderParams): Promise<void> => {
+  try {
+    validateMongoDbID(userId);
+    const user = await authModel.findById(userId);
+    if (!user)
+      throw new CustomAPIError("User not found", StatusCodes.NOT_FOUND);
+
+    const userCart = await UserCartModel.findOne({ orderby: userId });
+    if (!userCart)
+      throw new CustomAPIError("User cart not found", StatusCodes.NOT_FOUND);
+
+    let finalAmount =
+      couponApplied && userCart.totalAfterDiscount
+        ? userCart.totalAfterDiscount
+        : userCart.cartTotal;
+
+    const newOrder = await new UserOrderModel({
+      products: userCart.products,
+      paymentIntent: {
+        id: uniqid(),
+        method: "COD",
+        amount: finalAmount,
+        status: "Cash on Delivery",
+        created: Date.now(),
+        currency: "usd",
+      },
+      orderby: userId,
+      orderStatus: "Cash on Delivery",
+    }).save();
+
+    if (Array.isArray(userCart.products)) {
+      let update = userCart.products.map((item) => {
+        return {
+          updateOne: {
+            filter: { id: item.product.id },
+            update: { $inc: { quantity: -item.count, sold: +item.count } },
+          },
+        };
+      });
+      await productModel.bulkWrite(update, {});
+    } else {
+      // console.error("Product or product._id is undefined:", item);
+      throw new Error(`${userCart.products} is not an array`);
+      // return null;
+    }
+  } catch (error) {
+    console.log(error);
+    throw new CustomAPIError(
+      "Failed to create order",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
 };
