@@ -20,6 +20,7 @@ import {
   getUserCartController,
   emptyCartCtrl,
   applyCouponCtrl,
+  createOrderCtrl,
 } from "../controllers/userCtrls";
 import { auth, isAdmin } from "../middlewares/authMiddleware";
 
@@ -32,6 +33,7 @@ authRoute.get("/allusers", getAllUser);
 authRoute.get("/refresh-token", handleRefreshToken);
 authRoute.get("/logout", logoutUserCtrl);
 authRoute.get("/user-cart", auth, getUserCartController);
+authRoute.post("/cart/cash-order", auth, createOrderCtrl);
 authRoute.post("/cart/applycoupon", auth, applyCouponCtrl);
 authRoute.delete("/empty-cart", auth, emptyCartCtrl);
 authRoute.get("/:id", getUser);
