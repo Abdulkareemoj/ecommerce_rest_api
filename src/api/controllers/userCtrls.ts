@@ -28,7 +28,6 @@ import { Types } from "mongoose";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 import CustomAPIError from "../helpers/custom-errors";
-import { validateMongoDbID } from "../helpers/validateDbId";
 import { UserDataInterface } from "../interfaces/user_interface";
 
 // User Signup controller
