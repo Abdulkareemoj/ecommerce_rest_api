@@ -21,12 +21,15 @@ import {
   saveAddress_service,
   userCartService,
   getUserCartService,
+  emptyCartService,
+  applyCouponService,
+  CreateOrderService,
 } from "../services/user.services";
 import { Types } from "mongoose";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 import CustomAPIError from "../helpers/custom-errors";
-import { validateMongoDbID } from "../helpers/validateDbId";
+import { UserDataInterface } from "../interfaces/user_interface";
 
 // User Signup controller
 export const create_a_user = asyncHandler(
@@ -336,18 +339,84 @@ export const getUserCartController = async (
   res: Response
 ): Promise<void> => {
   const id = req?.user?.id;
-  if (!id) throw new CustomAPIError("Invalid user ID", 400);
-  console.log("ID data: ", id);
+  // console.log(req.user);
+  if (!id) throw new CustomAPIError("Invalid user ID", StatusCodes.NOT_FOUND);
+  // console.log("ID data from controller: ", id);
 
   try {
     const cart = await getUserCartService(id);
 
     if (!cart) {
-      throw new CustomAPIError("Cart not found", 404);
+      throw new CustomAPIError(
+        "Cart not found or empty",
+        StatusCodes.NOT_FOUND
+      );
     }
 
     res.status(StatusCodes.OK).json({ cartData: cart });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ error: error.message });
+  }
+};
+
+export const emptyCartCtrl = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const id = req?.user?.id;
+  if (!id) {
+    throw new CustomAPIError("invalid User ID", StatusCodes.NOT_ACCEPTABLE);
+  }
+  try {
+    const emptyCart = await emptyCartService(id);
+    res.json({ message: "Cart has been emptied", cartData: emptyCart });
+  } catch (error: any) {
+    console.error("Error in emptyCartCtrl:", error);
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+};
+
+export const applyCouponCtrl = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const { coupon } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId)
+    throw new CustomAPIError(
+      `User ID: ${userId} is invalid`,
+      StatusCodes.NOT_ACCEPTABLE
+    );
+
+  try {
+    const totalAfterDiscount = await applyCouponService(userId, coupon);
+    res.status(StatusCodes.OK).json({ discount: totalAfterDiscount });
+  } catch (error: any) {
+    res
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
+  }
+  return;
+};
+
+export const createOrderCtrl = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { COD, couponApplied } = req.body;
+    const userId = req?.user?.id;
+
+    if (!userId) {
+      throw new CustomAPIError("Invalid user ID", StatusCodes.BAD_REQUEST);
+    }
+
+    await CreateOrderService({ userId, COD, couponApplied });
+    res.json({ message: "Success!" });
+  } catch (error: any) {
+    res
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
   }
 };

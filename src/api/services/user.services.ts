@@ -1,6 +1,7 @@
 import { authModel } from "../models/userModels";
 import { UserOrderModel } from "../models/orderModel";
 import { productModel } from "../models/productsModels";
+import { CouponModel } from "../models/coupon.models";
 import { UserCartModel } from "../models/cartModel";
 import { mailer } from "../config/nodeMailer";
 import CustomAPIError from "../helpers/custom-errors";
@@ -17,7 +18,9 @@ import { IDecoded } from "../interfaces/authenticateRequest";
 import { CartItem } from "../interfaces/cartModel_Interface";
 import { CartModelInterface } from "../interfaces/cartModel_Interface";
 import { ProductDataInterface } from "../interfaces/product_Interface";
+import { CreateOrderParams } from "../interfaces/create_order";
 import { Types } from "mongoose";
+import uniqid from "uniqid";
 
 import dotenv from "dotenv";
 
@@ -306,7 +309,7 @@ export const LogoutService = async (
         );
       }
 
-      // Assuming you have a blacklistTokens model
+      // Assuming we have a blacklistTokens model
       blacklistTokens.create({ token: refreshToken });
     });
   } catch (error) {
@@ -504,17 +507,139 @@ export const userCartService = async (userId: string, cart: CartItem[]) => {
 export const getUserCartService = async (
   userId: string
 ): Promise<CartModelInterface | null> => {
+  // console.log("User ID Data: ", userId);
   validateMongoDbID(userId);
   try {
     const cart = await UserCartModel.findOne({ orderby: userId }).populate(
-      "products.product"
+      "products.product",
+      "_id title price totalAfterDiscount"
     );
-    console.log(userId);
-    console.log(cart);
+    // console.log(cart);
     return cart;
   } catch (error) {
     throw new CustomAPIError(
       "Could not retrieve user's cart",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
+export const emptyCartService = async (
+  userId: string
+): Promise<CartModelInterface | void> => {
+  validateMongoDbID(userId);
+  try {
+    const user = await authModel.findOne({ _id: userId });
+    if (!user) {
+      throw new CustomAPIError("User not found", StatusCodes.NOT_FOUND);
+    }
+    const cart = await UserCartModel.findOneAndRemove({ orderby: userId });
+    if (!cart) {
+      throw new CustomAPIError("Cart not found", StatusCodes.NOT_FOUND);
+    }
+    return cart;
+  } catch (error) {
+    console.error("Error in emptyCartService:", error);
+    throw new CustomAPIError(
+      "Couldn't empty the cart",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
+export const applyCouponService = async (
+  userId: string,
+  coupon: string
+): Promise<number> => {
+  validateMongoDbID(userId);
+
+  const validCoupon = await CouponModel.findOne({ name: coupon });
+  if (!validCoupon) {
+    throw new CustomAPIError("Invalid Coupon", StatusCodes.BAD_REQUEST);
+  }
+  const user = await authModel.findOne({ _id: userId });
+  if (!user) {
+    throw new CustomAPIError("User not found", StatusCodes.NOT_FOUND);
+  }
+
+  // Use optional chaining to access cartTotal safely
+  const userCart = await UserCartModel.findOne({ orderby: userId })?.populate(
+    "products.product"
+  );
+
+  if (!userCart) {
+    throw new CustomAPIError("User cart not found", StatusCodes.NOT_FOUND);
+  }
+
+  const cartTotal = userCart.cartTotal || 0;
+
+  const totalAfterDiscount = (
+    cartTotal -
+    (cartTotal * validCoupon.discount) / 100
+  ).toFixed(2);
+
+  await UserCartModel.findOneAndUpdate(
+    { orderby: userId },
+    { totalAfterDiscount },
+    { new: true }
+  );
+
+  return parseFloat(totalAfterDiscount);
+};
+
+export const CreateOrderService = async ({
+  userId,
+  COD,
+  couponApplied,
+}: CreateOrderParams): Promise<void> => {
+  try {
+    validateMongoDbID(userId);
+    const user = await authModel.findById(userId);
+    if (!user)
+      throw new CustomAPIError("User not found", StatusCodes.NOT_FOUND);
+
+    const userCart = await UserCartModel.findOne({ orderby: userId });
+    if (!userCart)
+      throw new CustomAPIError("User cart not found", StatusCodes.NOT_FOUND);
+
+    let finalAmount =
+      couponApplied && userCart.totalAfterDiscount
+        ? userCart.totalAfterDiscount
+        : userCart.cartTotal;
+
+    const newOrder = await new UserOrderModel({
+      products: userCart.products,
+      paymentIntent: {
+        id: uniqid(),
+        method: "COD",
+        amount: finalAmount,
+        status: "Cash on Delivery",
+        created: Date.now(),
+        currency: "usd",
+      },
+      orderby: userId,
+      orderStatus: "Cash on Delivery",
+    }).save();
+
+    if (Array.isArray(userCart.products)) {
+      let update = userCart.products.map((item) => {
+        return {
+          updateOne: {
+            filter: { id: item.product.id },
+            update: { $inc: { quantity: -item.count, sold: +item.count } },
+          },
+        };
+      });
+      await productModel.bulkWrite(update, {});
+    } else {
+      // console.error("Product or product._id is undefined:", item);
+      throw new Error(`${userCart.products} is not an array`);
+      // return null;
+    }
+  } catch (error) {
+    console.log(error);
+    throw new CustomAPIError(
+      "Failed to create order",
       StatusCodes.INTERNAL_SERVER_ERROR
     );
   }
