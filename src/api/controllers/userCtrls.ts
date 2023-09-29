@@ -23,6 +23,7 @@ import {
   getUserCartService,
   emptyCartService,
   applyCouponService,
+  CreateOrderService,
 } from "../services/user.services";
 import { Types } from "mongoose";
 
@@ -397,4 +398,25 @@ export const applyCouponCtrl = async (
       .json({ error: error.message });
   }
   return;
+};
+
+export const createOrderCtrl = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { COD, couponApplied } = req.body;
+    const userId = req?.user?.id;
+
+    if (!userId) {
+      throw new CustomAPIError("Invalid user ID", StatusCodes.BAD_REQUEST);
+    }
+
+    await CreateOrderService({ userId, COD, couponApplied });
+    res.json({ message: "Success!" });
+  } catch (error: any) {
+    res
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
+  }
 };
