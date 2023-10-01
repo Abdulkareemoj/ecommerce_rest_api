@@ -38,7 +38,9 @@ import customErrorLogger from "../src/api/utils/errCustomLogger";
 
 // <======= Routes Imports begins here ==========>
 import authRoute from "./api/routes/auth.routes";
+import colorRoute from "./api/routes/color.routes";
 import productRoute from "./api/routes/product.routes";
+import enquiryRoute from "./api/routes/enq.routes";
 import blogRoute from "./api/routes/blog.routes";
 import blogcategoryRoute from "./api/routes/blogCategory.routes";
 import productCategoryRoute from "./api/routes/productCategory.routes";
@@ -91,6 +93,8 @@ app.use("/api/v1/mall/brand", brandRoute);
 app.use("/api/v1/mall/blogscategory", blogcategoryRoute);
 app.use("/api/v1/mall/productscategory", productCategoryRoute);
 app.use("/api/v1/mall/coupon", couponRoute);
+app.use("/api/v1/mall/colors", colorRoute);
+app.use("/api/v1/mall/enquiry", enquiryRoute);
 
 app.get("/", (req: Request, res: Response) => {
   req.session.isAuth = true;
