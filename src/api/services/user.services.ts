@@ -504,6 +504,7 @@ export const userCartService = async (userId: string, cart: CartItem[]) => {
   return newCart;
 };
 
+// this needs to be worked on there is a bug in it...
 export const getUserCartService = async (
   userId: string
 ): Promise<CartModelInterface | null> => {
@@ -625,7 +626,7 @@ export const CreateOrderService = async ({
       let update = userCart.products.map((item) => {
         return {
           updateOne: {
-            filter: { id: item.product.id },
+            filter: { id: item.product._id },
             update: { $inc: { quantity: -item.count, sold: +item.count } },
           },
         };
