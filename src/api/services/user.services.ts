@@ -11,6 +11,7 @@ import { StatusCodes } from "http-status-codes";
 import { generateToken } from "../helpers/jsonWebToken";
 import { generateRefreshToken } from "../helpers/refreshToken";
 import { UserDataInterface } from "../interfaces/user_interface";
+import {OrderInterface, UpdateOrderStatusParams } from "../interfaces/order_interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
 import crypto from "crypto";
@@ -607,6 +608,8 @@ export const CreateOrderService = async ({
       couponApplied && userCart.totalAfterDiscount
         ? userCart.totalAfterDiscount
         : userCart.cartTotal;
+    
+     const paymentMethod = COD ? "COD" : "Online Payment";
 
     const newOrder = await new UserOrderModel({
       products: userCart.products,
@@ -614,19 +617,19 @@ export const CreateOrderService = async ({
         id: uniqid(),
         method: "COD",
         amount: finalAmount,
-        status: "Cash on Delivery",
+        status: COD ? "Cash on Delivery" : "Paid Online",
         created: Date.now(),
         currency: "usd",
       },
       orderby: userId,
-      orderStatus: "Cash on Delivery",
+      orderStatus: COD ? "Cash on Delivery" : "Paid Online",
     }).save();
 
     if (Array.isArray(userCart.products)) {
       let update = userCart.products.map((item) => {
         return {
           updateOne: {
-            filter: { id: item.product._id },
+            filter: { id: item.product._id }, // this is where the error is coming 
             update: { $inc: { quantity: -item.count, sold: +item.count } },
           },
         };
@@ -640,8 +643,74 @@ export const CreateOrderService = async ({
   } catch (error) {
     console.log(error);
     throw new CustomAPIError(
-      "Failed to create order",
+      "Failed To Create Orders",
       StatusCodes.INTERNAL_SERVER_ERROR
     );
+  }
+};
+
+export const getOrderService = async (userId: string) => {
+  validateMongoDbID(userId);
+  try {
+    const userOrders = await UserOrderModel.findOne({ orderby: userId })
+      .populate("products.product")
+      .populate("orderby")
+      .exec();
+    return userOrders;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const getAllOrdersService = async () => {
+  try {
+    const alluserorders = await UserOrderModel.find()
+      .populate("products.product")
+      .populate("orderby")
+      .exec();
+    return alluserorders;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const getOrderByUserIdService = async (userId: string) => {
+  validateMongoDbID(userId);
+  try {
+    const user_orders = await UserOrderModel.findOne({ orderby: userId })
+      .populate("products.product")
+      .populate("orderby")
+      .exec();
+    return user_orders;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const updateOrderStatus_service = async ({
+  status,
+  id,
+}: UpdateOrderStatusParams): Promise<OrderInterface | null> => {
+  try {
+    validateMongoDbID(id);
+    const update = {
+      orderStatus: status,
+      paymentIntent: {
+        status: status,
+      },
+    };
+
+    const updatedOrder = await UserOrderModel.findOneAndUpdate(
+      { _id: id },
+      update,
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      throw new CustomAPIError("Order Not Found", StatusCodes.NOT_FOUND);
+    }
+    return updatedOrder;
+  } catch (error) {
+    throw new CustomAPIError("Failed to update order status", 500);
   }
 };

@@ -15,3 +15,8 @@ export interface OrderInterface extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface UpdateOrderStatusParams {
+  id: string;
+  status: string;
+}

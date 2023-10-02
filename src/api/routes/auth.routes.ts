@@ -21,6 +21,10 @@ import {
   emptyCartCtrl,
   applyCouponCtrl,
   createOrderCtrl,
+  getOrdersController,
+  getAllOrdersController,
+  getOrderByUserIDController,
+  UpdateOrderStatusController,
 } from "../controllers/userCtrls";
 import { auth, isAdmin } from "../middlewares/authMiddleware";
 
@@ -29,6 +33,15 @@ const authRoute = express.Router();
 authRoute.post("/signup", create_a_user);
 authRoute.post("/login", LoginUser);
 authRoute.post("/admin-login", LoginAdmin);
+authRoute.get("/get-orders", auth, getOrdersController);
+authRoute.get("/getallorders", auth, isAdmin, getAllOrdersController);
+authRoute.get("/getorderbyuser/:id", auth, isAdmin, getOrderByUserIDController);
+authRoute.put(
+  "/order/update-order/:id",
+  auth,
+  isAdmin,
+  UpdateOrderStatusController
+);
 authRoute.get("/allusers", getAllUser);
 authRoute.get("/refresh-token", handleRefreshToken);
 authRoute.get("/logout", logoutUserCtrl);
