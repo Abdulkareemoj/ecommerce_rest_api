@@ -12,15 +12,13 @@ import { generateToken } from "../helpers/jsonWebToken";
 import { generateRefreshToken } from "../helpers/refreshToken";
 import { UserDataInterface } from "../interfaces/user_interface";
 import {OrderInterface, UpdateOrderStatusParams } from "../interfaces/order_interface";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
 import crypto from "crypto";
 import { IDecoded } from "../interfaces/authenticateRequest";
 import { CartItem } from "../interfaces/cartModel_Interface";
 import { CartModelInterface } from "../interfaces/cartModel_Interface";
-import { ProductDataInterface } from "../interfaces/product_Interface";
 import { CreateOrderParams } from "../interfaces/create_order";
-import { Types } from "mongoose";
 import uniqid from "uniqid";
 
 import dotenv from "dotenv";
