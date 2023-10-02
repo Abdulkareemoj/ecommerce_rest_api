@@ -24,10 +24,15 @@ import {
   emptyCartService,
   applyCouponService,
   CreateOrderService,
+  getOrderService,
+  getAllOrdersService,
+  getOrderByUserIdService,
+  updateOrderStatus_service,
 } from "../services/user.services";
 import { Types } from "mongoose";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
+import {UpdateOrderStatusParams} from "../interfaces/order_interface"
 import CustomAPIError from "../helpers/custom-errors";
 import { UserDataInterface } from "../interfaces/user_interface";
 
@@ -414,6 +419,76 @@ export const createOrderCtrl = async (
 
     await CreateOrderService({ userId, COD, couponApplied });
     res.json({ message: "Success!" });
+  } catch (error: any) {
+    res
+      .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: error.message });
+  }
+};
+
+export const getOrdersController = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const userID = req?.user?.id;
+
+  try {
+    if (!userID) {
+      res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid user ID" });
+      return;
+    }
+    const userOrders = await getOrderService(userID);
+    res.status(StatusCodes.OK).json({ user_orders: userOrders });
+  } catch (error: any) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Error fetching orders" });
+  }
+};
+
+export const getAllOrdersController = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const allUsers = await getAllOrdersService();
+    res.status(StatusCodes.OK).json({ users_data: allUsers });
+  }
+);
+
+export const getOrderByUserIDController = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  const userID = req?.user?.id;
+
+  try {
+    if (typeof userID === "string") {
+      const order = await getOrderByUserIdService(userID);
+      if (!order) {
+        res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ error: "Invalid User Order" });
+        return;
+      }
+      res.status(StatusCodes.OK).json({ userorders: order });
+    } else {
+      throw new Error("User Order Cannot be processed.");
+    }
+  } catch (error: any) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Error fetching user orders" });
+  }
+};
+
+export const UpdateOrderStatusController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    const updatedOrder = await updateOrderStatus_service({status, id});
+    res.status(StatusCodes.OK).json(updatedOrder);
   } catch (error: any) {
     res
       .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
