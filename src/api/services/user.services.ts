@@ -639,7 +639,6 @@ export const CreateOrderService = async ({
       // return null;
     }
   } catch (error) {
-    console.log(error);
     throw new CustomAPIError(
       "Failed To Create Orders",
       StatusCodes.INTERNAL_SERVER_ERROR
@@ -655,7 +654,6 @@ export const getOrderService = async (userId: string) => {
       .populate("products.product")
       .populate("orderby")
       .exec();
-    console.log(`UserOrders: ${userOrders}`)
     return userOrders;
   } catch (error: any) {
     throw new Error(error.message);
@@ -710,7 +708,8 @@ export const updateOrderStatus_service = async ({
       throw new CustomAPIError("Order Not Found", StatusCodes.NOT_FOUND);
     }
     return updatedOrder;
-  } catch (error) {
+  } catch (error: any) {
+    console.log(error.message);
     throw new CustomAPIError("Failed to update order status", 500);
   }
 };
