@@ -29,12 +29,9 @@ import {
   getOrderByUserIdService,
   updateOrderStatus_service,
 } from "../services/user.services";
-import { Types } from "mongoose";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
-import {UpdateOrderStatusParams} from "../interfaces/order_interface"
 import CustomAPIError from "../helpers/custom-errors";
-import { UserDataInterface } from "../interfaces/user_interface";
 
 // User Signup controller
 export const create_a_user = asyncHandler(
@@ -438,6 +435,7 @@ export const getOrdersController = async (
       return;
     }
     const userOrders = await getOrderService(userID);
+
     res.status(StatusCodes.OK).json({ user_orders: userOrders });
   } catch (error: any) {
     res
@@ -487,7 +485,7 @@ export const UpdateOrderStatusController = async (
     const { status } = req.body;
     const { id } = req.params;
 
-    const updatedOrder = await updateOrderStatus_service({status, id});
+    const updatedOrder = await updateOrderStatus_service({ status, id });
     res.status(StatusCodes.OK).json(updatedOrder);
   } catch (error: any) {
     res

@@ -12,15 +12,13 @@ import { generateToken } from "../helpers/jsonWebToken";
 import { generateRefreshToken } from "../helpers/refreshToken";
 import { UserDataInterface } from "../interfaces/user_interface";
 import {OrderInterface, UpdateOrderStatusParams } from "../interfaces/order_interface";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
 import crypto from "crypto";
 import { IDecoded } from "../interfaces/authenticateRequest";
 import { CartItem } from "../interfaces/cartModel_Interface";
 import { CartModelInterface } from "../interfaces/cartModel_Interface";
-import { ProductDataInterface } from "../interfaces/product_Interface";
 import { CreateOrderParams } from "../interfaces/create_order";
-import { Types } from "mongoose";
 import uniqid from "uniqid";
 
 import dotenv from "dotenv";
@@ -474,8 +472,8 @@ export const userCartService = async (userId: string, cart: CartItem[]) => {
   }
 
   for (let i = 0; i < cart.length; i++) {
-    let cartItem: CartItem = {
-      id: cart[i].id,
+    let cartItem = {
+      product: cart[i].id,
       count: cart[i].count,
       color: cart[i].color,
       price: 0,
@@ -651,11 +649,13 @@ export const CreateOrderService = async ({
 
 export const getOrderService = async (userId: string) => {
   validateMongoDbID(userId);
+  console.log(`User ID: ${userId}`);
   try {
     const userOrders = await UserOrderModel.findOne({ orderby: userId })
       .populate("products.product")
       .populate("orderby")
       .exec();
+    console.log(`UserOrders: ${userOrders}`)
     return userOrders;
   } catch (error: any) {
     throw new Error(error.message);

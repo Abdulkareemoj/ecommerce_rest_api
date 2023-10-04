@@ -33,7 +33,7 @@ const authRoute = express.Router();
 authRoute.post("/signup", create_a_user);
 authRoute.post("/login", LoginUser);
 authRoute.post("/admin-login", LoginAdmin);
-authRoute.get("/get-orders", auth, getOrdersController);
+
 authRoute.get("/getallorders", auth, isAdmin, getAllOrdersController);
 authRoute.get("/getorderbyuser/:id", auth, isAdmin, getOrderByUserIDController);
 authRoute.put(
@@ -60,5 +60,6 @@ authRoute.put("/wishlist", auth, addToWishList);
 authRoute.get("/wishlist/:id", auth, getWishList);
 authRoute.put("/save-address", auth, saveAddress);
 authRoute.post("/cart", auth, userCartCtrl);
+authRoute.get("/get-orders", auth, getOrdersController);
 
 export default authRoute;
