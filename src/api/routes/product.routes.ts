@@ -6,7 +6,6 @@ import {
   deleteProduct,
   get_all_products,
   getASingleProduct,
-
   rateProduct,
   uploadImageCtrl,
 } from "../controllers/productCtrls";
@@ -25,12 +24,12 @@ productRoute.put(
   productImageResize,
   uploadImageCtrl
 );
-productRoute.use(auth);
-productRoute.use(isAdmin);
+productRoute.put("/rateproduct", auth, rateProduct);
+
+productRoute.use(auth, isAdmin);
+
 productRoute.post("/createproduct", create_product);
 productRoute.patch("/:id", updateSingleProduct);
 productRoute.delete("/:id", deleteProduct);
-
-productRoute.put("/rateproduct", auth, rateProduct);
 
 export default productRoute;
