@@ -31,7 +31,6 @@ import {
 } from "../services/user.services";
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
-import { UpdateOrderStatusParams } from "../interfaces/order_interface";
 import CustomAPIError from "../helpers/custom-errors";
 
 // User Signup controller
@@ -436,6 +435,7 @@ export const getOrdersController = async (
       return;
     }
     const userOrders = await getOrderService(userID);
+
     res.status(StatusCodes.OK).json({ user_orders: userOrders });
   } catch (error: any) {
     res

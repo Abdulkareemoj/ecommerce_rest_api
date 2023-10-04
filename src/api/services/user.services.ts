@@ -472,8 +472,8 @@ export const userCartService = async (userId: string, cart: CartItem[]) => {
   }
 
   for (let i = 0; i < cart.length; i++) {
-    let cartItem: CartItem = {
-      id: cart[i].id,
+    let cartItem = {
+      product: cart[i].id,
       count: cart[i].count,
       color: cart[i].color,
       price: 0,
@@ -649,11 +649,13 @@ export const CreateOrderService = async ({
 
 export const getOrderService = async (userId: string) => {
   validateMongoDbID(userId);
+  console.log(`User ID: ${userId}`);
   try {
     const userOrders = await UserOrderModel.findOne({ orderby: userId })
       .populate("products.product")
       .populate("orderby")
       .exec();
+    console.log(`UserOrders: ${userOrders}`)
     return userOrders;
   } catch (error: any) {
     throw new Error(error.message);
