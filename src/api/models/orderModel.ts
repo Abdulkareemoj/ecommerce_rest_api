@@ -7,7 +7,7 @@ const orderSchema = new Schema<OrderInterface>(
       {
         product: {
           type: Schema.Types.ObjectId,
-          ref: "Product",
+          ref: "ProductModel",
         },
         count: Number,
         color: String,
@@ -28,7 +28,7 @@ const orderSchema = new Schema<OrderInterface>(
     },
     orderby: {
       type: Schema.Types.ObjectId,
-      ref: "UserModel",
+      ref: "Usermodel",
     },
   },
   {
@@ -36,5 +36,7 @@ const orderSchema = new Schema<OrderInterface>(
   }
 );
 
-// Export the model
-export const UserOrderModel = mongoose.model<OrderInterface>("OrderModel", orderSchema);
+export const UserOrderModel = mongoose.model<OrderInterface>(
+  "OrderModel",
+  orderSchema
+);
