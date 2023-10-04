@@ -440,7 +440,7 @@ export const getOrdersController = async (
   } catch (error: any) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Error fetching orders" });
+      .json({ error: error.message });
   }
 };
 
@@ -473,7 +473,7 @@ export const getOrderByUserIDController = async (
   } catch (error: any) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Error fetching user orders" });
+      .json({ error: error.message });
   }
 };
 
