@@ -11,7 +11,10 @@ import { StatusCodes } from "http-status-codes";
 import { generateToken } from "../helpers/jsonWebToken";
 import { generateRefreshToken } from "../helpers/refreshToken";
 import { UserDataInterface } from "../interfaces/user_interface";
-import {OrderInterface, UpdateOrderStatusParams } from "../interfaces/order_interface";
+import {
+  OrderInterface,
+  UpdateOrderStatusParams,
+} from "../interfaces/order_interface";
 import jwt from "jsonwebtoken";
 import { blacklistTokens } from "../models/blacklistTokens";
 import crypto from "crypto";
@@ -27,16 +30,20 @@ dotenv.config();
 
 // User signup Services
 export const create_user_service = async (userData: UserDataInterface) => {
-  const newUser = await authModel.create({ ...userData });
-  const userToken = newUser.createJWT();
+  try {
+    const newUser = await authModel.create({ ...userData });
+    const userToken = newUser.createJWT();
 
-  // Send a welcome
-  const { email } = newUser;
-  const subject = "Welcome to Online Shopping Mall";
-  const text = "This is an online shopping mall shop with ease";
+    // Send a welcome
+    const { email } = newUser;
+    const subject = "Welcome to Online Shopping Mall";
+    const text = "This is an online shopping mall shop with ease";
 
-  mailer(email, subject, text);
-  return { newUser, userToken };
+    mailer(email, subject, text);
+    return { newUser, userToken };
+  } catch (error: any) {
+    throw new Error(`Error signing up new User: ${error.message}`);
+  }
 };
 
 // Login User service
@@ -606,8 +613,8 @@ export const CreateOrderService = async ({
       couponApplied && userCart.totalAfterDiscount
         ? userCart.totalAfterDiscount
         : userCart.cartTotal;
-    
-     const paymentMethod = COD ? "COD" : "Online Payment";
+
+    const paymentMethod = COD ? "COD" : "Online Payment";
 
     const newOrder = await new UserOrderModel({
       products: userCart.products,
@@ -627,7 +634,7 @@ export const CreateOrderService = async ({
       let update = userCart.products.map((item) => {
         return {
           updateOne: {
-            filter: { id: item.product._id }, // this is where the error is coming 
+            filter: { id: item.product._id }, // this is where the error is coming
             update: { $inc: { quantity: -item.count, sold: +item.count } },
           },
         };

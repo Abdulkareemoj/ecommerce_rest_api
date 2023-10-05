@@ -48,7 +48,6 @@ import brandRoute from "./api/routes/brands.routes";
 import couponRoute from "./api/routes/coupon.routes";
 
 dotenv.config();
-
 const app: Application = express();
 
 const MongoDBStore = MongodbSession(session);
