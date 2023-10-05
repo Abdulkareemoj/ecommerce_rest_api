@@ -32,10 +32,16 @@ import {
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 import CustomAPIError from "../helpers/custom-errors";
+import { validateUser } from "../config/validation";
 
 // User Signup controller
 export const create_a_user = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
+     if (!req.body) {
+       throw new Error("The body property is required.");
+     }
+    const validatedData = validateUser.parse(req.body);
+    
     // Callling the create_user_service function.
     const { newUser, userToken } = await create_user_service(req.body);
     res
