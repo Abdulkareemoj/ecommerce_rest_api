@@ -29,7 +29,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // User signup Services
-export const create_user_service = async (userData: UserDataInterface) => {
+export const create_user_service = async (
+  userData: Partial<UserDataInterface>
+) => {
   try {
     const newUser = await authModel.create({ ...userData });
     const userToken = newUser.createJWT();

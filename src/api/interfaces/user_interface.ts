@@ -6,6 +6,7 @@ export interface UserDataInterface extends Document {
   email: string;
   mobileNumber: string;
   password: string;
+  confirmPassword: string;
   role: string;
   isBlocked: boolean;
   cart: Types.ObjectId[];
@@ -17,7 +18,6 @@ export interface UserDataInterface extends Document {
   createJWT: () => string;
   comparePwd: (pwd: string) => Promise<boolean>;
   createPasswordResetToken: () => string;
-  confirmPassword?: string;
   passwordChangedAt: Date;
   passwordResetToken: string | undefined;
   passwordResetExpires?: Date | undefined;
