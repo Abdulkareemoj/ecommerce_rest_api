@@ -1,32 +1,47 @@
 import { z } from "zod";
 
 export const validateUser = z.object({
-  body: z.object({
-    firstName: z
-      .string({
-        required_error: "users's first name is required",
-      })
-      .max(20),
-    lastName: z
-      .string({
-        required_error: "users's last name is required",
-      })
-      .max(20),
-    email: z.string({
+  firstName: z
+    .string({
+      required_error: "users's first name is required",
+    })
+    .trim()
+    .max(20),
+  lastName: z
+    .string({
+      required_error: "users's last name is required",
+    })
+    .trim()
+    .max(20),
+  email: z
+    .string({
       required_error: "users's email is needed",
-    }),
-    mobileNumber: z.string({
+    })
+    .trim(),
+  mobileNumber: z
+    .string({
       required_error: "your mobile number is required.",
-    }),
-    password: z.string({ required_error: "Your password is required" }).max(15),
-    role: z.string().default("user"),
-    isBlocked: z.boolean().default(false),
-    cart: z.array(z.string()),
-    address: z.array(z.string()),
-    wishlists: z.array(z.string()),
-    refreshToken: z.string().optional(),
-    passwordChangedAt: z.date().nullable(),
-    passwordResetToken: z.string().nullable(),
-    passwordResetExpires: z.date().nullable(),
+    })
+    .trim(),
+  password: z
+    .string({ required_error: "Your password is required" })
+    .trim()
+    .max(15),
+  confirmPassword: z.string({
+    required_error: "Your password must be the same as your current",
   }),
 });
+
+const hasID = z.object({ id: z.string() });
+
+export const userWithID = validateUser.merge(hasID);
+
+export type User = z.infer<typeof userWithID>;
+
+export type CreateUserDTO = z.infer<typeof validateUser>;
+
+export type PartialCreateUserDTO = z.infer<typeof validateUser>;
+
+export const PartialValidateSchema = validateUser.partial();
+
+export type UpdateValidateDTO = z.infer<typeof PartialValidateSchema>;
