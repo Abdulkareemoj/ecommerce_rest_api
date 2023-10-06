@@ -32,18 +32,19 @@ import {
 
 import { AuthenticatedRequest } from "../interfaces/authenticateRequest";
 import CustomAPIError from "../helpers/custom-errors";
-import { validateUser } from "../config/validation";
+import { validateUser, userWithID } from "../config/validation";
 
 // User Signup controller
 export const create_a_user = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-     if (!req.body) {
-       throw new Error("The body property is required.");
-     }
-    const validatedData = validateUser.parse(req.body);
-    
+    if (!req.body) {
+      throw new Error("The body property is required.");
+    }
+
+    const validateData = validateUser.parse(req.body);
+
     // Callling the create_user_service function.
-    const { newUser, userToken } = await create_user_service(req.body);
+    const { newUser, userToken } = await create_user_service(validateData);
     res
       .status(StatusCodes.CREATED)
       .json({ UserData: { userEmail: newUser.email }, token: userToken });
@@ -148,9 +149,7 @@ export const deleteUser = asyncHandler(
 // Updating the user controller
 export const updateuserCtrl = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    // console.log(req.user);
     const { id } = req.params;
-    // console.log(id);
     const updatedUser = await updateUserService({ id }, req.body);
     res
       .status(StatusCodes.OK)
