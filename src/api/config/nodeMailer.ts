@@ -23,5 +23,3 @@ export const mailer = (mail:string, subject:string, text:string) => {
     .then(() => console.log("Mail sent successfully"))
     .catch((error) => console.error(error.message));
 };
-
-// make the component reusable by making it take 3 customizable arguments

@@ -97,8 +97,6 @@ app.use("/api/v1/mall/enquiry", enquiryRoute);
 
 app.get("/", (req: Request, res: Response) => {
   req.session.isAuth = true;
-  // console.log(req.session);
-  // console.log(req.session.id);
   res
     .status(StatusCodes.PERMANENT_REDIRECT)
     .json({ message: "Welcome to the E-Commerce rest api application." });
