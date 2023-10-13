@@ -49,7 +49,6 @@ export const auth = asyncHandler(
         StatusCodes.UNAUTHORIZED
       );
     }
-    //   next();
   }
 );
 
