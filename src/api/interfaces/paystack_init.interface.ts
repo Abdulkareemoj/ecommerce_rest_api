@@ -1,0 +1,23 @@
+import { Response } from "express";
+import { Document } from "mongoose";
+import { CartModelInterface } from "./cartModel_Interface";
+import { UserDataInterface } from "./user_interface";
+
+// Define the structure of your form data
+interface Form extends Document {
+  email: UserDataInterface["email"];
+  firstName: UserDataInterface["firstName"];
+  lastName: UserDataInterface["lastName"];
+  currency?: string;
+  price:
+    | CartModelInterface["totalAfterDiscount"]
+    | CartModelInterface["cartTotal"];
+  reference?: string;
+  metadata?: { [key: string]: any };
+}
+
+interface Callback {
+  (error: NodeJS.ErrnoException | null, response: Response): void;
+}
+
+export { Form, Callback };
