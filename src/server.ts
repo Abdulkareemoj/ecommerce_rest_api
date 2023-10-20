@@ -7,6 +7,7 @@ import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import { StatusCodes } from "http-status-codes";
+import bodyParser from "body-parser";
 import MongodbSession from "connect-mongodb-session";
 import cookieParser from "cookie-parser";
 import session from "express-session";
@@ -47,6 +48,7 @@ import productCategoryRoute from "./api/routes/productCategory.routes";
 import brandRoute from "./api/routes/brands.routes";
 import couponRoute from "./api/routes/coupon.routes";
 
+
 dotenv.config();
 const app: Application = express();
 
@@ -66,6 +68,7 @@ app.use(cors());
 app.use(helmet());
 app.use(logger("dev"));
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(mongoSanitize());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
