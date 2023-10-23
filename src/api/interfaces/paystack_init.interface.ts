@@ -4,7 +4,7 @@ import { CartModelInterface } from "./cartModel_Interface";
 import { UserDataInterface } from "./user_interface";
 
 // Define the structure of your form data
-interface Form extends Document {
+interface Form {
   email: UserDataInterface["email"];
   firstName: UserDataInterface["firstName"];
   lastName: UserDataInterface["lastName"];
@@ -20,4 +20,12 @@ interface Callback {
   (error: NodeJS.ErrnoException | null, response: Response): void;
 }
 
-export { Form, Callback };
+interface PaymentData {
+  amount: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  metadata?: { [key: string]: any };
+}
+
+export { Form, Callback, PaymentData };

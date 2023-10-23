@@ -47,7 +47,7 @@ import blogcategoryRoute from "./api/routes/blogCategory.routes";
 import productCategoryRoute from "./api/routes/productCategory.routes";
 import brandRoute from "./api/routes/brands.routes";
 import couponRoute from "./api/routes/coupon.routes";
-
+import paymentRoute from "./api/routes/payment.routes";
 
 dotenv.config();
 const app: Application = express();
@@ -97,6 +97,7 @@ app.use("/api/v1/mall/productscategory", productCategoryRoute);
 app.use("/api/v1/mall/coupon", couponRoute);
 app.use("/api/v1/mall/colors", colorRoute);
 app.use("/api/v1/mall/enquiry", enquiryRoute);
+app.use("/api/v1/mall/payment", paymentRoute);
 
 app.get("/", (req: Request, res: Response) => {
   req.session.isAuth = true;
