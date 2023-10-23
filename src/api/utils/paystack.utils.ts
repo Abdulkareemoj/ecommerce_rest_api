@@ -1,5 +1,5 @@
 /* 
-    create our function that calls paystack-API and 
+    create the function that calls paystack-API and 
     submits our transaction details and authorization 
     headers to initialize and verify them.
 */
