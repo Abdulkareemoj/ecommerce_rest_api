@@ -8,8 +8,8 @@ const paymentRouter = express.Router();
 
 paymentRouter.use(auth);
 
-paymentRouter.post("/", PaymentController.startPayment);
-paymentRouter.get("/createPayment", PaymentController.createPayment);
-paymentRouter.get("/paymentDetails", PaymentController.getPayment);
+paymentRouter.post("/createpayment", PaymentController.startPayment);
+paymentRouter.get("/createpayment", PaymentController.createPayment);
+paymentRouter.get("/paymentdetails", PaymentController.getPayment);
 
 export default paymentRouter;

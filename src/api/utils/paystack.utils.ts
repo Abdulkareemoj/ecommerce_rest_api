@@ -5,44 +5,46 @@
 */
 
 import dotenv from "dotenv";
-import * as request from "request";
-import { Form, Callback } from "../interfaces/paystack_init.interface";
+import axios from "axios";
+import { InitializePaymentInput } from "../types/payment_init";
 
 dotenv.config();
 
-export const paystack_init = (request: any) => {
-  const Secret_key = process.env.PAY_STACK_API_KEY;
+export const initializePayment = async (data: InitializePaymentInput) => {
+  try {
+    const response = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      data,
+      {
+        headers: {
+          authorization: `Bearer ${process.env.PAY_STACK_API_KEY}`,
+          "content-type": "application/json",
+          "cache-control": "no-cache",
+        },
+      }
+    );
 
-  const initializePayment = (form: Form, mycallBack: Callback) => {
-    const options = {
-      url: "https://api.paystack.co/transaction/initialize",
-      headers: {
-        authorization: Secret_key,
-        "content-type": "application/json",
-        "cache-control": "no-cache",
-      },
-      form,
-    };
-    const callBack: request.RequestCallback = (error, response, body) => {
-      return mycallBack(error, body);
-    };
-    request.post(options, callBack);
-  };
+    return response;
+  } catch (error) {
+    console.error;
+  }
+};
 
-  const verifyPayment = (ref: string, mycallBack: Callback) => {
-    const options = {
-      url:
-        "https://api.paystack.co/transaction/verify/" + encodeURIComponent(ref),
-      headers: {
-        authorization: Secret_key,
-        "content-type": "application/json",
-        "cache-control": "no-cache",
-      },
-    };
-    const callback: request.RequestCallback = (error, response, body) => {
-      return mycallBack(error, body);
-    };
-    request(options, callback);
-  };
-  return { initializePayment, verifyPayment };
+export const verifyPayment = async (reference: string) => {
+  try {
+    const response = await axios.get(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        headers: {
+          authorization: `Bearer ${process.env.PAY_STACK_API_KEY}`,
+          "content-type": "application/json",
+          "cache-control": "no-cache",
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    console.error;
+  }
 };
