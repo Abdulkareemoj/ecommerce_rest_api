@@ -15,7 +15,8 @@ export class PaymentController {
 
   public static async createPayment(req: Request, res: Response) {
     try {
-      const response = await paymentInstance.createPayment(req.query);
+      const ref = req.body.reference;
+      const response = await paymentInstance.createPayment(ref);
       res.status(201).json({ status: "Success", data: response });
     } catch (error: any) {
       res.status(500).json({ status: "Failed", message: error.message });
