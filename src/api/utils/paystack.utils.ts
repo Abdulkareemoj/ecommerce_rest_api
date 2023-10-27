@@ -18,8 +18,9 @@ export const initializePayment = async (data: InitializePaymentInput) => {
       {
         headers: {
           authorization: `Bearer ${process.env.PAY_STACK_API_KEY}`,
-          "content-type": "application/json",
-          "cache-control": "no-cache",
+          "Content-Type": "application/json",
+          "Content-Length": "calculated when request is sent", 
+          "Host": "calculated when request is sent"
         },
       }
     );
@@ -37,8 +38,8 @@ export const verifyPayment = async (reference: string) => {
       {
         headers: {
           authorization: `Bearer ${process.env.PAY_STACK_API_KEY}`,
-          "content-type": "application/json",
-          "cache-control": "no-cache",
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
         },
       }
     );
