@@ -7,13 +7,15 @@ export class PaymentService {
   async startPayment(data: PaymentData) {
     try {
       const paymentData: InitializePaymentInput = {
-        price: data.amount * 100,
+        amount: data.amount * 100,
+        currency: "NGN",
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
         metadata: {
           full_name: data.firstName + " " + data.lastName,
         },
+      
       };
 
       return await initializePayment(paymentData);
