@@ -1,0 +1,12 @@
+1. Import Paystack SDK in PaymentController
+2. Create a new method for initializing Paystack payments
+3. In the new method:
+   3.1 Initialize a transaction using Paystack SDK
+   3.2 Get the authorization URL from the response
+   3.3 Send the authorization URL in the response
+4. Create a new method for verifying Paystack payments
+5. In the new method:
+   5.1 Verify the transaction using Paystack SDK
+   5.2 Check if transaction was successful
+   5.3 Handle successful or failed payment
+6. Add new routes for initializing and verifying Paystack payments in payment.routes.ts

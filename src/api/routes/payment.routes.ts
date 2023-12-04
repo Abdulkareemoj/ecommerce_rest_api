@@ -11,5 +11,13 @@ paymentRouter.use(auth);
 paymentRouter.post("/createpayment", PaymentController.startPayment);
 paymentRouter.get("/createpayment", PaymentController.createPayment);
 paymentRouter.get("/paymentdetails", PaymentController.getPayment);
-
+paymentRouter.post(
+  "/paystack/createpayment",
+  PaymentController.startPaystackPayment,
+);
+paymentRouter.get(
+  "/paystack/verifypayment",
+  PaymentController.verifyPaystackPayment,
+);
+s;
 export default paymentRouter;
